@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Interactive OpenStreetMap with Leaflet</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        body {
+            margin: 0;
+        }
+
+        #map {
+            height: 100vh;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="map"></div>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        var centerLat = 46.20180915690188;
+        var centerLng = 6.144409565708289;
+
+        var map = L.map('map').setView([centerLat, centerLng], 13);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        const showIsochrones = async () => {
+            const response = await fetch("http://localhost:8100/isochrones");
+            const isochrones = await response.json();
+            console.log(isochrones);
+
+            for (const isochrone of isochrones) {
+                let latlngs = [];
+
+                for (const coordinates of isochrone) {
+                    // L.marker([coordinates.x, coordinates.y]).addTo(map);
+                    latlngs.push([coordinates.x, coordinates.y]);
+                }
+
+                const polygon = L.polygon(latlngs, {
+                    color: 'transparent',
+                    fillColor: 'red',
+                    fillOpacity: 0.4,
+                }).addTo(map);
+            }
+        };
+        showIsochrones();
+    </script>
+</body>
+
+</html>
