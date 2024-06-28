@@ -2,10 +2,10 @@
 <html>
 
 <head>
-    <title>Interactive OpenStreetMap with Leaflet</title>
-    <meta charset="utf-8" />
+    <title>Interactive Isochrone Map of the Swiss Public Transport</title>
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
     <style>
         body {
             margin: 0;
@@ -14,41 +14,93 @@
         #map {
             height: 100vh;
         }
+
+        .legend {
+            background: white;
+            border: 0;
+            bottom: 32px;
+            display: flex;
+            left: 50%;
+            margin: 0;
+            padding: 0;
+            position: fixed;
+            transform: translate(-50%, 0);
+            z-index: 1000;
+        }
+
+        .legend-entry {
+            color: white;
+            padding: 10px 20px;
+        }
     </style>
 </head>
 
 <body>
     <div id="map"></div>
+    <div class="legend" id="legend">
+        <!--
+        <div class="legend-entry" style="background-color: green;">30 minutes</div>
+        <div class="legend-entry" style="background-color: red;">30 minutes</div>
+        -->
+    </div>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
-        var centerLat = 46.20180915690188;
-        var centerLng = 6.144409565708289;
+        // Geneva coordinates:
+        const centerLat = 46.20180915690188;
+        const centerLng = 6.144409565708289;
 
-        var map = L.map('map').setView([centerLat, centerLng], 13);
+        const map = L.map('map').setView([centerLat, centerLng], 12);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(map);
+
+        const legendEl = document.getElementById("legend");
+        const isochronesLayer = L.layerGroup();
 
         const showIsochrones = async () => {
             const response = await fetch("http://localhost:8100/isochrones");
             const isochrones = await response.json();
-            console.log(isochrones);
 
-            for (const isochrone of isochrones) {
-                let latlngs = [];
+            const coor = isochrones.departure_stop_coordinates;
+            map.setView([coor.x, coor.y]);
+            L.marker([coor.x, coor.y]).addTo(map);
+            // rgb=[Math.floor((255 * val) / 1), Math.floor((255 * (1 - val)) / 1),0]
 
-                for (const coordinates of isochrone) {
-                    // L.marker([coordinates.x, coordinates.y]).addTo(map);
-                    latlngs.push([coordinates.x, coordinates.y]);
+            for (const [i, isochrone] of isochrones.items.reverse().entries()) {
+                const aaa = (isochrones.items.length - i) / isochrones.items.length;
+                const rgb = [Math.floor((255 * aaa) / 1), Math.floor((255 * (1 - aaa)) / 1), 0]
+                const fillColor = "rgb(" + rgb.join(",") + ")";
+
+                for (const polygon of isochrone.polygons) {
+                    let latlngs = [];
+
+                    for (const point of polygon) {
+                        latlngs.push([point.x, point.y]);
+                    }
+
+                    L.polygon(latlngs, {
+                        color: 'transparent',
+                        fillColor: fillColor,
+                        fillOpacity: 1.0,
+                    }).addTo(isochronesLayer);
                 }
 
-                const polygon = L.polygon(latlngs, {
-                    color: 'transparent',
-                    fillColor: 'red',
-                    fillOpacity: 0.4,
-                }).addTo(map);
+                legendEl.innerHTML = `
+                    <div class="legend-entry" style="background-color: ${fillColor};">
+                        ${isochrone.time_limit} minutes
+                    </div>
+                ` + legendEl.innerHTML;
             }
+
+            isochronesLayer.addTo(map);
+            isochronesLayer.getPane().style.opacity = 0.6;
+
+            var dynamicData = [
+                { color: '#ff0000', label: 'Red area' },
+                { color: '#0000ff', label: 'Blue area' },
+                { color: '#00ff00', label: 'Green area' }
+            ];
         };
         showIsochrones();
     </script>
