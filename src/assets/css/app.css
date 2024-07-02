@@ -1,0 +1,46 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
+body {
+    font-family: "Montserrat", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    margin: 0;
+}
+
+#map {
+    height: 100vh;
+}
+
+.legend-container {
+    background-color: white;
+    border: 1px solid lightgray;
+    border-radius: 16px;
+    top: 32px;
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    right: 32px;
+    position: fixed;
+    z-index: 1000;
+}
+
+.legend {
+    border: 1px solid lightgray;
+    border-radius: 8px;
+    margin: 0;
+}
+
+.legend-entry {
+    color: white;
+    padding: 10px 20px;
+}
+
+.legend-entry:first-of-type {
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+.legend-entry:last-of-type {
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
