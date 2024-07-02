@@ -1,9 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
 
-body {
+* {
+    box-sizing: border-box;
     font-family: "Montserrat", sans-serif;
-    font-weight: 400;
     font-style: normal;
+    font-weight: 450;
+}
+
+body {
     margin: 0;
 }
 
@@ -13,26 +17,31 @@ body {
 
 .legend-container {
     background-color: white;
-    border: 1px solid lightgray;
+    border: 1px solid #C8C8C8;
     border-radius: 16px;
-    top: 32px;
+    bottom: 32px;
+    box-shadow: 0px 4px 10px 0px rgba(0, 0, 0, 0.17);
     display: flex;
     flex-direction: column;
-    padding: 12px;
+    padding: 8px;
     right: 32px;
     position: fixed;
     z-index: 1000;
 }
 
 .legend {
-    border: 1px solid lightgray;
+    border: 0;
     border-radius: 8px;
     margin: 0;
 }
 
 .legend-entry {
-    color: white;
-    padding: 10px 20px;
+    color: black;
+    font-size: 14px;
+    height: 40px;
+    line-height: 40px;
+    text-align: center;
+    width: 96px;
 }
 
 .legend-entry:first-of-type {
@@ -43,4 +52,80 @@ body {
 .legend-entry:last-of-type {
     border-bottom-left-radius: 8px;
     border-bottom-right-radius: 8px;
+}
+
+.form-container-outer {
+    bottom: 32px;
+    left: 32px;
+    position: fixed;
+    transition: 0.5s ease-in-out;
+    z-index: 1000;
+}
+
+.form-container-outer .toggle-form-display img {
+    transition: 0.5s ease-in-out;
+}
+
+.form-container {
+    background-color: white;
+    border: 1px solid #C8C8C8;
+    border-radius: 16px;
+    box-shadow: 0px 4px 10px 0px rgba(0, 0, 0, 0.17);
+    overflow: hidden;
+    padding: 16px;
+    width: 340px;
+}
+
+.form-container h2 {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+    margin-bottom: 16px;
+}
+
+.input-container {
+    margin-bottom: 8px;
+}
+
+.input-container label {
+    margin-bottom: 4px;
+}
+
+label {
+    display: block;
+}
+
+input:not([type=radio]),
+select {
+    width: 100%;
+}
+
+.display-mode-container label {
+    display: inline-block;
+}
+
+.toggle-form-display {
+    border: 1px solid #C8C8C8;
+    border-radius: 8px;
+    box-shadow: 0px 4px 10px 0px rgba(0, 0, 0, 0.17);
+    cursor: pointer;
+    height: 40px;
+    padding: 10px;
+    position: absolute;
+    right: -56px;
+    top: 0px;
+    width: 40px;
+}
+
+.toggle-form-display img {
+    height: 100%;
+    width: 100%;
+}
+
+.hide-form {
+    left: calc(16px - 340px);
+}
+
+.hide-form .toggle-form-display img {
+    transform: rotate(180deg);
 }

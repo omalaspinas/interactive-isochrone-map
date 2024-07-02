@@ -23,6 +23,52 @@
             -->
         </div>
     </div>
+    <div class="form-container-outer" id="form-container-outer">
+        <div class="form-container">
+            <h2>Calculer une carte isochrone</h2>
+
+            <form action="">
+                <div class="input-container">
+                    <label>Point d'origine</label>
+                    <button>Choisir un point d'origine</button>
+                </div>
+
+                <div class="input-container">
+                    <label for="">Limite de temps (en minutes)</label>
+                    <input type="number" min="5" max="480" value="60">
+                </div>
+
+                <div class="input-container">
+                    <label for="">Intervalle entre les isochrones</label>
+                    <select>
+                        <option>15 min.</option>
+                    </select>
+                </div>
+
+                <div class="input-container">
+                    <label>Mode d'affichage</label>
+
+                    <div class="display-mode-container">
+                        <label>
+                            <input type="radio" name="salutation" value="" checked> Précision
+                        </label>
+                        <label>
+                            <input type="radio" name="salutation" value=""> Esthétique
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <button>Calculer</button>
+                </div>
+            </form>
+        </div>
+
+        <button class="toggle-form-display" id="toggle-form-display">
+            <img src="./assets/images/double-caret.png" alt="Double caret">
+        </button>
+    </div>
+
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="./assets/js/app.js"></script>
 </body>

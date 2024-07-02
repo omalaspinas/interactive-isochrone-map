@@ -1,8 +1,8 @@
-// Geneva coordinates:
-const centerLat = 46.20180915690188;
-const centerLng = 6.144409565708289;
+// Berne coordinates:
+const centerLat = 46.94376850207415;
+const centerLng = 7.448744419286967;
 
-const map = L.map('map').setView([centerLat, centerLng], 12);
+const map = L.map('map').setView([centerLat, centerLng], 11);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -12,27 +12,25 @@ const legendContainerEl = document.getElementById("legend-container");
 const legendEl = document.getElementById("legend");
 const isochronesLayer = L.layerGroup();
 
-const showIsochrones = async () => {
+const computeIsochrones = async () => {
     const response = await fetch("http://localhost:8100/isochrones");
     const isochrones = await response.json();
 
     const coor = isochrones.departure_stop_coordinates;
-    map.setView([coor.x, coor.y]);
+    map.setView([coor.x, coor.y], 11);
     L.marker([coor.x, coor.y]).addTo(map);
 
     const colors = [
-        [41, 80, 181],
-        [45, 127, 185],
-        [65, 183, 197],
-        [127, 206, 187],
-        [199, 234, 180],
-        [255, 255, 203],
-    ];
+        '#199851',
+        '#90CF5D',
+        '#DAEF8A',
+        '#FDE28B',
+        '#FD8E59',
+        '#D83025',
+    ].slice(0, isochrones.items.length).reverse();
 
     for (const [i, isochrone] of isochrones.items.reverse().entries()) {
-        // const aaa = (isochrones.items.length - i) / isochrones.items.length;
-        let color = colors[i];
-        color = "rgb(" + color.join(",") + ")";
+        const color = colors[i];
 
         for (const polygon of isochrone.polygons) {
             let latlngs = [];
@@ -49,7 +47,7 @@ const showIsochrones = async () => {
         }
 
         legendEl.innerHTML = `
-            <div class="legend-entry" style="background-color: ${color}; color: ${i < 3 ? 'white' : 'black'}">
+            <div class="legend-entry" style="background-color: ${color};">
                 ${isochrone.time_limit} min.
             </div>
             ` + legendEl.innerHTML;
@@ -60,4 +58,20 @@ const showIsochrones = async () => {
     isochronesLayer.addTo(map);
     isochronesLayer.getPane().style.opacity = 0.6;
 };
-showIsochrones();
+setTimeout(() => {
+    computeIsochrones();
+}, 500);
+
+
+const formContainerOuter = document.getElementById("form-container-outer");
+const toggleFormDisplay = document.getElementById("toggle-form-display");
+
+toggleFormDisplay.addEventListener("click", () => {
+    if (formContainerOuter.classList.contains("hide-form")) {
+        formContainerOuter.classList.remove("hide-form");
+        // toggleFormDisplay.innerHTML = "<<";
+    } else {
+        formContainerOuter.classList.add("hide-form");
+        // toggleFormDisplay.innerHTML = ">>";
+    }
+});
