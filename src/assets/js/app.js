@@ -1,6 +1,10 @@
-// Berne coordinates:
-const centerLat = 46.94376850207415;
-const centerLng = 7.448744419286967;
+// // Berne coordinates:
+// const centerLat = 46.94376850207415;
+// const centerLng = 7.448744419286967;
+
+// Geneva coordinates:
+const centerLat = 46.204519704052466;
+const centerLng = 6.138575100420967;
 
 const map = L.map('map').setView([centerLat, centerLng], 11);
 
@@ -8,25 +12,27 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 }).addTo(map);
 
-const legendContainerEl = document.getElementById("legend-container");
-const legendEl = document.getElementById("legend");
+const legendContainer = document.getElementById("legend-container");
+const legend = document.getElementById("legend");
 const isochronesLayer = L.layerGroup();
 
 const computeIsochrones = async () => {
-    const response = await fetch("http://localhost:8100/isochrones");
+    const displayMode = 'contour_line';
+    const params = 'departure_stop_id=8587418&departure_date=2024-02-03&departure_time=13:25&time_limit=240&isochrone_interval=40&display_mode=' + displayMode;
+    const response = await fetch('http://localhost:8100/isochrones?' + params);
     const isochrones = await response.json();
 
-    const coor = isochrones.departure_stop_coordinates;
-    map.setView([coor.x, coor.y], 11);
-    L.marker([coor.x, coor.y]).addTo(map);
+    const coord = isochrones.departure_stop_coord;
+    map.setView([coord.x, coord.y], 11);
+    L.marker([coord.x, coord.y]).addTo(map);
 
     const colors = [
-        '#199851',
-        '#90CF5D',
-        '#DAEF8A',
-        '#FDE28B',
-        '#FD8E59',
-        '#D83025',
+        '#36AB68',
+        '#91CF60',
+        '#D9EF8B',
+        '#FEE08B',
+        '#FC8D59',
+        '#E2453C',
     ].slice(0, isochrones.items.length).reverse();
 
     for (const [i, isochrone] of isochrones.items.reverse().entries()) {
@@ -40,20 +46,21 @@ const computeIsochrones = async () => {
             }
 
             L.polygon(latlngs, {
-                color: 'transparent',
+                color: displayMode === 'contour_line' ? 'black' : 'transparent',
+                weight: 1.0,
                 fillColor: color,
                 fillOpacity: 1.0,
             }).addTo(isochronesLayer);
         }
 
-        legendEl.innerHTML = `
+        legend.innerHTML = `
             <div class="legend-entry" style="background-color: ${color};">
                 ${isochrone.time_limit} min.
             </div>
-            ` + legendEl.innerHTML;
+            ` + legend.innerHTML;
     }
 
-    legendContainerEl.style.display = 'block';
+    legendContainer.style.display = 'block';
 
     isochronesLayer.addTo(map);
     isochronesLayer.getPane().style.opacity = 0.6;
@@ -62,16 +69,13 @@ setTimeout(() => {
     computeIsochrones();
 }, 500);
 
-
 const formContainerOuter = document.getElementById("form-container-outer");
 const toggleFormDisplay = document.getElementById("toggle-form-display");
 
 toggleFormDisplay.addEventListener("click", () => {
     if (formContainerOuter.classList.contains("hide-form")) {
         formContainerOuter.classList.remove("hide-form");
-        // toggleFormDisplay.innerHTML = "<<";
     } else {
         formContainerOuter.classList.add("hide-form");
-        // toggleFormDisplay.innerHTML = ">>";
     }
 });
