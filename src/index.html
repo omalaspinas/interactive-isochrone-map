@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 
 <head>
-    <title>Interactive Isochrone Map of the Swiss Public Transport</title>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carte isochrone interactive des transports publics suisses</title>
 
     <!-- Favicon -->
     <link rel="icon" type="image/ico" href="./assets/images/favicon.ico">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
     <link rel="stylesheet" href="./assets/css/app.css">
 </head>
@@ -30,21 +30,29 @@
             <form action="">
                 <div class="input-container">
                     <label>Point d'origine</label>
-                    <button class="btn btn-secondary" type="button">
-                        <img src="./assets/images/origin-point.png" width="15"> Choisir un point d'origine
+                    <button class="btn btn-secondary" id="choose-origin-point" type="button">
+                        <img src="./assets/images/origin-point.png" width="15"> Choisir le point d'origine
                     </button>
+                    <p class="origin-point-coord-container">Coordonnées : <span id="origin-point-coord">-</span></p>
                 </div>
 
                 <div class="input-container">
-                    <label for="">Limite de temps (en minutes)</label>
-                    <input type="number" min="5" max="480" value="60">
+                    <label for="departure-at">Date et heure de départ</label>
+                    <input type="datetime-local" id="departure-at" value="2024-10-09 14:39">
                 </div>
 
                 <div class="input-container">
-                    <label for="">Intervalle entre les isochrones</label>
-                    <select>
+                    <label for="time-limit">Limite de temps (en minutes)</label>
+                    <input type="number" id="time-limit" min="10" max="480" value="60">
+                </div>
+
+                <div class="input-container">
+                    <label for="isochrone-interval">Intervalle entre les isochrones</label>
+                    <select id="isochrone-interval">
+                        <!--
                         <option selected disabled>Sélectionner</option>
                         <option>15 min.</option>
+                        -->
                     </select>
                 </div>
 
@@ -53,17 +61,17 @@
 
                     <div class="display-mode-container">
                         <label>
-                            <input type="radio" name="display_mode" value="" checked> Cercles
+                            <input type="radio" id="display-mode-circles" name="display_mode" checked> Cercles
                         </label>
                         <label>
-                            <input type="radio" name="display_mode" value=""> Ligne de contour
+                            <input type="radio" id="display-mode-contour-line" name="display_mode"> Ligne de contour
                         </label>
                     </div>
                 </div>
 
                 <div class="mt-6">
 
-                    <button class="btn">
+                    <button class="btn" id="submit-button" type="button">
                         <img src="./assets/images/target.png" width="20" height="20"> Calculer
                     </button>
                 </div>

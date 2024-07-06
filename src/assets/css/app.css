@@ -43,7 +43,7 @@ body {
 }
 
 .btn-secondary:hover {
-    background-color: #f2f2f2;
+    background-color: #eeeded;
     opacity: 1.0;
 }
 
@@ -188,3 +188,14 @@ input[type='radio'] {
 .hide-form .toggle-form-display img {
     transform: rotate(180deg);
 }
+
+.choosing-origin-point {
+    color: #E2453C;
+    border-color: #E2453C;
+}
+
+.origin-point-coord-container {
+    font-style: italic;
+    margin-top: 6px;
+}
+
