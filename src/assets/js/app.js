@@ -19,6 +19,12 @@ const submitButton = document.getElementById('submit-button');
 const centerLat = 46.204519704052466;
 const centerLng = 6.138575100420967;
 
+var customIcon = L.icon({
+    iconUrl: './assets/images/marker.png',
+    iconSize: [32, 38],
+    iconAnchor: [16, 38],
+});
+
 const map = L.map('map').setView([centerLat, centerLng], 11);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -66,8 +72,8 @@ const computeIsochrones = async () => {
     const colors = [
         '#36AB68',
         '#91CF60',
-        '#D9EF8B',
-        '#FEE08B',
+        '#D7FF67',
+        '#FFD767',
         '#FC8D59',
         '#E2453C',
     ].slice(0, isochrones.items.length).reverse();
@@ -148,7 +154,7 @@ map.on('click', (e) => {
     }
 
     originPointCoord = [e.latlng.lat, e.latlng.lng]
-    originPointMarker = L.marker([originPointCoord[0], originPointCoord[1]]).addTo(map);
+    originPointMarker = L.marker([originPointCoord[0], originPointCoord[1]], { icon: customIcon }).addTo(map);
 
     chooseOriginPoint.classList.remove("choosing-origin-point");
     chooseOriginPoint.innerHTML = `<img src="./assets/images/origin-point.png" width="15"> Changer de point d'origine`;

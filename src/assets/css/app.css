@@ -44,6 +44,7 @@ body {
 
 .btn-secondary:hover {
     background-color: #eeeded;
+    border-color: rgba(32, 31, 31, 0.6);
     opacity: 1.0;
 }
 
@@ -194,8 +195,12 @@ input[type='radio'] {
     border-color: #E2453C;
 }
 
+.choosing-origin-point:hover {
+    border-color: rgba(226, 69, 60, 0.6);
+    background-color: #F8F2F1;
+}
+
 .origin-point-coord-container {
     font-style: italic;
     margin-top: 6px;
 }
-
