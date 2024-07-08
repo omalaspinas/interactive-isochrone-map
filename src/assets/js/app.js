@@ -2,6 +2,7 @@ const legendContainer = document.getElementById("legend-container");
 const legend = document.getElementById("legend");
 const chooseOriginPoint = document.getElementById("choose-origin-point");
 const originPointCoordElem = document.getElementById('origin-point-coord');
+const mapElem = document.getElementById('map');
 
 let isChoosingOriginPoint = false;
 let originPointMarker = null;
@@ -67,16 +68,26 @@ const computeIsochrones = async () => {
     const response = await fetch('http://localhost:8100/isochrones?' + new URLSearchParams(params).toString());
     const isochrones = await response.json();
 
-    map.setView([isochrones.departure_stop_coord.x, isochrones.departure_stop_coord.y], 11);
+    map.setView([originPointCoord[0], originPointCoord[1]]);
+    console.log([isochrones.departure_stop_coord.x, isochrones.departure_stop_coord.y]);
+
+    const palette = [
+        '#36AB68', // Green 1.
+        '#91CF60', // Green 2.
+        '#D7FF67', // Green 3.
+        '#FFD767', // Yellow.
+        '#FC8D59', // Orange.
+        '#E2453C', // Red.
+    ];
 
     const colors = [
-        '#36AB68',
-        '#91CF60',
-        '#D7FF67',
-        '#FFD767',
-        '#FC8D59',
-        '#E2453C',
-    ].slice(0, isochrones.items.length).reverse();
+        [0],
+        [0, 5],
+        [0, 4, 5],
+        [0, 3, 4, 5],
+        [0, 1, 3, 4, 5],
+        [0, 1, 2, 3, 4, 5],
+    ][isochrones.items.length - 1].map(index => palette[index]).reverse();
 
     for (const [i, isochrone] of isochrones.items.reverse().entries()) {
         const color = colors[i];
@@ -102,6 +113,12 @@ const computeIsochrones = async () => {
             </div>
             ` + legend.innerHTML;
     }
+
+    // L.circleMarker([isochrones.departure_stop_coord.x, isochrones.departure_stop_coord.y], 10, {
+    //     color: 'blue',
+    //     opacity: 0.6,
+    //     fillOpacity: 1.0,
+    // }).addTo(map);
 
     legendContainer.style.display = 'block';
 
@@ -133,10 +150,12 @@ toggleFormDisplay.addEventListener("click", () => {
 
 chooseOriginPoint.addEventListener("click", () => {
     if (chooseOriginPoint.classList.contains("choosing-origin-point")) {
+        mapElem.classList.remove('cursor-marker');
         chooseOriginPoint.classList.remove("choosing-origin-point");
         chooseOriginPoint.innerHTML = `<img src="./assets/images/origin-point.png" width="15"> Changer de point d'origine`;
         isChoosingOriginPoint = false;
     } else {
+        mapElem.classList.add('cursor-marker');
         chooseOriginPoint.classList.add("choosing-origin-point");
         chooseOriginPoint.innerHTML = `Annuler`;
         isChoosingOriginPoint = true;
@@ -156,6 +175,7 @@ map.on('click', (e) => {
     originPointCoord = [e.latlng.lat, e.latlng.lng]
     originPointMarker = L.marker([originPointCoord[0], originPointCoord[1]], { icon: customIcon }).addTo(map);
 
+    mapElem.classList.remove('cursor-marker');
     chooseOriginPoint.classList.remove("choosing-origin-point");
     chooseOriginPoint.innerHTML = `<img src="./assets/images/origin-point.png" width="15"> Changer de point d'origine`;
     originPointCoordElem.innerHTML = `${originPointCoord[0].toFixed(8)} ${originPointCoord[1].toFixed(8)}`;
@@ -186,9 +206,9 @@ timeLimitInput.addEventListener('change', () => {
     updateIsochroneIntervalOptions();
 });
 
-submitButton.addEventListener('click', () => {
+submitButton.addEventListener('click', async () => {
     submitButton.disabled = true;
-    computeIsochrones();
+    await computeIsochrones();
     submitButton.disabled = false;
 });
 

@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="./assets/css/app.css">
 </head>
 
-<body>
+<body class="marker-cursor">
     <div id="map"></div>
     <div class="legend-container" id="legend-container" style="display: none;">
         <div class="legend" id="legend">
@@ -27,7 +27,7 @@
         <div class="form-container">
             <h2>Calculer une carte isochrone</h2>
 
-            <form action="">
+            <form>
                 <div class="input-container">
                     <label>Point d'origine</label>
                     <button class="btn btn-secondary" id="choose-origin-point" type="button">
@@ -38,7 +38,7 @@
 
                 <div class="input-container">
                     <label for="departure-at">Date et heure de départ</label>
-                    <input type="datetime-local" id="departure-at" value="2024-10-09 14:39">
+                    <input type="datetime-local" id="departure-at" value="2024-10-09 08:30">
                 </div>
 
                 <div class="input-container">
@@ -79,7 +79,7 @@
         </div>
 
         <button class="toggle-form-display" id="toggle-form-display">
-            <img src="./assets/images/double-caret.png">
+            <img src="./assets/images/double-caret.svg">
         </button>
     </div>
 

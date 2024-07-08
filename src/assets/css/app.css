@@ -9,11 +9,20 @@
 }
 
 body {
+    height: 100vh;
     margin: 0;
 }
 
 #map {
     height: 100vh;
+}
+
+.cursor-marker {
+    cursor: url(./../images/marker.png) 16 38, auto !important;
+}
+
+.leaflet-interactive {
+    cursor: inherit;
 }
 
 .btn {
@@ -30,6 +39,17 @@ body {
     transition: 0.2s ease-in-out;
     width: 100%;
     gap: 6px;
+}
+
+.btn:disabled {
+    background-color: #908B8B;
+    border-color: #908B8B;
+    opacity: 0.7;
+}
+
+.btn:disabled:hover {
+    cursor: default;
+    opacity: 0.7;
 }
 
 .btn:hover {
@@ -170,7 +190,7 @@ input[type='radio'] {
     box-shadow: 0px 4px 10px 0px rgba(0, 0, 0, 0.17);
     cursor: pointer;
     height: 40px;
-    padding: 10px;
+    padding: 8px;
     position: absolute;
     right: -56px;
     top: 0px;
@@ -203,4 +223,15 @@ input[type='radio'] {
 .origin-point-coord-container {
     font-style: italic;
     margin-top: 6px;
+}
+
+#submit-button:disabled img {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    100% {
+        -webkit-transform: rotate(360deg);
+        transform: rotate(360deg);
+    }
 }
