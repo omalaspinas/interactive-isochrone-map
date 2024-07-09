@@ -3,6 +3,7 @@ const legend = document.getElementById("legend");
 const chooseOriginPoint = document.getElementById("choose-origin-point");
 const originPointCoordElem = document.getElementById('origin-point-coord');
 const mapElem = document.getElementById('map');
+const formElem = document.getElementById('form');
 
 let isChoosingOriginPoint = false;
 let originPointMarker = null;
@@ -43,10 +44,50 @@ const getDisplayMode = () => {
         return 'contour_line';
     }
 
-    return '';
+    // This exception should never be thrown.
+    throw new Error("Required");
 };
 
+const getCurrentDateTime = () => {
+    const now = new Date();
+    const year = now.getFullYear().toString().padStart(2, '0');
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    const day = now.getDate().toString().padStart(2, '0');
+    const hour = now.getHours().toString().padStart(2, '0');
+    const minute = now.getMinutes().toString().padStart(2, '0');
+    return year + "-" + month + "-" + day + " " + hour + ":" + minute;
+};
+
+departureAtInput.value = getCurrentDateTime();
+
+formElem.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    submitButton.disabled = true;
+    await computeIsochrones();
+    submitButton.disabled = false;
+});
+
+const setMinMaxDepartureAt = async () => {
+    try {
+        const response = await fetch('http://localhost:8100/metadata');
+        const metadata = await response.json();
+
+        departureAtInput.min = metadata.start_date + " 00:00";
+        departureAtInput.max = metadata.end_date + " 23:59";
+    } catch (error) {
+        alert("Une erreur inconnue s'est produite lors du chargement des métadonnées.");
+        return;
+    }
+};
+setMinMaxDepartureAt();
+
 const computeIsochrones = async () => {
+    if (originPointCoord === null) {
+        alert("Vous devez d'abord choisir un point d'origine.");
+        return;
+    }
+
     clearPreviousIsochroneMap();
 
     const departureDate = departureAtInput.value.split('T')[0];
@@ -65,11 +106,22 @@ const computeIsochrones = async () => {
         display_mode: displayMode,
     };
 
-    const response = await fetch('http://localhost:8100/isochrones?' + new URLSearchParams(params).toString());
-    const isochrones = await response.json();
+    let isochrones;
+
+    try {
+        const response = await fetch('http://localhost:8100/isochrones?' + new URLSearchParams(params).toString());
+        isochrones = await response.json();
+    } catch (error) {
+        alert("Une erreur inconnue s'est produite. Veuillez réessayer.");
+        return;
+    }
+
+    if (isochrones.items.length === 0) {
+        alert("La carte isochrone n'a pas pu être calculée, car aucun arrêt n'est atteignable dans le temps imparti.");
+        return;
+    }
 
     map.setView([originPointCoord[0], originPointCoord[1]]);
-    console.log([isochrones.departure_stop_coord.x, isochrones.departure_stop_coord.y]);
 
     const palette = [
         '#36AB68', // Green 1.
@@ -204,12 +256,6 @@ timeLimitInput.addEventListener('change', () => {
     }
 
     updateIsochroneIntervalOptions();
-});
-
-submitButton.addEventListener('click', async () => {
-    submitButton.disabled = true;
-    await computeIsochrones();
-    submitButton.disabled = false;
 });
 
 updateIsochroneIntervalOptions();

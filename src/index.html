@@ -27,7 +27,7 @@
         <div class="form-container">
             <h2>Calculer une carte isochrone</h2>
 
-            <form>
+            <form id="form">
                 <div class="input-container">
                     <label>Point d'origine</label>
                     <button class="btn btn-secondary" id="choose-origin-point" type="button">
@@ -38,22 +38,17 @@
 
                 <div class="input-container">
                     <label for="departure-at">Date et heure de départ</label>
-                    <input type="datetime-local" id="departure-at" value="2024-10-09 08:30">
+                    <input type="datetime-local" id="departure-at" required>
                 </div>
 
                 <div class="input-container">
                     <label for="time-limit">Limite de temps (en minutes)</label>
-                    <input type="number" id="time-limit" min="10" max="480" value="60">
+                    <input type="number" id="time-limit" min="10" max="480" value="60" required>
                 </div>
 
                 <div class="input-container">
                     <label for="isochrone-interval">Intervalle entre les isochrones</label>
-                    <select id="isochrone-interval">
-                        <!--
-                        <option selected disabled>Sélectionner</option>
-                        <option>15 min.</option>
-                        -->
-                    </select>
+                    <select id="isochrone-interval" required></select>
                 </div>
 
                 <div class="input-container">
@@ -61,17 +56,17 @@
 
                     <div class="display-mode-container">
                         <label>
-                            <input type="radio" id="display-mode-circles" name="display_mode" checked> Cercles
+                            <input type="radio" id="display-mode-circles" name="display_mode" required checked> Cercles
                         </label>
                         <label>
-                            <input type="radio" id="display-mode-contour-line" name="display_mode"> Ligne de contour
+                            <input type="radio" id="display-mode-contour-line" name="display_mode" required> Ligne de contour
                         </label>
                     </div>
                 </div>
 
                 <div class="mt-6">
 
-                    <button class="btn" id="submit-button" type="button">
+                    <button class="btn" id="submit-button" type="submit">
                         <img src="./assets/images/target.png" width="20" height="20"> Calculer
                     </button>
                 </div>
