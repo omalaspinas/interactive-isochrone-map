@@ -106,22 +106,23 @@ const computeIsochrones = async () => {
         display_mode: displayMode,
     };
 
-    let isochrones;
+    let isochrone_map;
 
     try {
         const response = await fetch('http://localhost:8100/isochrones?' + new URLSearchParams(params).toString());
-        isochrones = await response.json();
+        isochrone_map = await response.json();
     } catch (error) {
         alert("Une erreur inconnue s'est produite. Veuillez réessayer.");
         return;
     }
 
-    if (isochrones.items.length === 0) {
+    if (isochrone_map.isochrones.length === 0) {
         alert("La carte isochrone n'a pas pu être calculée, car aucun arrêt n'est atteignable dans le temps imparti.");
         return;
     }
 
-    map.setView([originPointCoord[0], originPointCoord[1]]);
+    map.fitBounds([isochrone_map.bounding_box[0], isochrone_map.bounding_box[1]], {animate: false});
+    map.setView([originPointCoord[0], originPointCoord[1]], undefined, {animate: false});
 
     const palette = [
         '#36AB68', // Green 1.
@@ -139,9 +140,9 @@ const computeIsochrones = async () => {
         [0, 3, 4, 5],
         [0, 1, 3, 4, 5],
         [0, 1, 2, 3, 4, 5],
-    ][isochrones.items.length - 1].map(index => palette[index]).reverse();
+    ][isochrone_map.isochrones.length - 1].map(index => palette[index]).reverse();
 
-    for (const [i, isochrone] of isochrones.items.reverse().entries()) {
+    for (const [i, isochrone] of isochrone_map.isochrones.reverse().entries()) {
         const color = colors[i];
 
         for (const polygon of isochrone.polygons) {
