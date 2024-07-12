@@ -1,5 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
 
+/* "Default" */
+
 * {
     box-sizing: border-box;
     font-family: "Montserrat", sans-serif;
@@ -13,17 +15,35 @@ body {
     margin: 0;
 }
 
-#map {
-    height: 100vh;
+label {
+    display: block;
 }
 
-.cursor-marker {
-    cursor: url(./../images/marker.png) 16 38, auto !important;
+input:not([type=radio]),
+select {
+    border: 2px solid #C8C8C8;
+    border-radius: 8px;
+    padding: 0px 8px;
+    height: 40px;
+    width: 100%;
 }
 
-.leaflet-interactive {
-    cursor: inherit;
+input[type='radio'] {
+    accent-color: #201F1F;
+    height: 16px;
+    width: 16px;
 }
+
+/* Utility */
+
+.mt-4 {
+    margin-top: 1rem;
+}
+
+.mt-6 {
+    margin-top: 1.5rem;
+}
+
 
 .btn {
     background-color: #201F1F;
@@ -41,6 +61,11 @@ body {
     gap: 6px;
 }
 
+.btn:hover {
+    cursor: pointer;
+    opacity: 0.9;
+}
+
 .btn:disabled {
     background-color: #908B8B;
     border-color: #908B8B;
@@ -50,11 +75,6 @@ body {
 .btn:disabled:hover {
     cursor: default;
     opacity: 0.7;
-}
-
-.btn:hover {
-    cursor: pointer;
-    opacity: 0.9;
 }
 
 .btn-secondary {
@@ -68,13 +88,30 @@ body {
     opacity: 1.0;
 }
 
-.mt-4 {
-    margin-top: 1rem;
+/* Animation */
+
+@keyframes spin {
+    100% {
+        -webkit-transform: rotate(360deg);
+        transform: rotate(360deg);
+    }
 }
 
-.mt-6 {
-    margin-top: 1.5rem;
+/* Leaflet */
+
+#map {
+    height: 100vh;
 }
+
+.cursor-marker {
+    cursor: url(./../images/marker.png) 16 38, auto !important;
+}
+
+.leaflet-interactive {
+    cursor: inherit;
+}
+
+/* Legend */
 
 .legend-container {
     background-color: #F9F9F9;
@@ -114,16 +151,14 @@ body {
     border-bottom-right-radius: 8px;
 }
 
+/* Form */
+
 .form-container-outer {
     bottom: 32px;
     left: 32px;
     position: fixed;
     transition: 0.5s ease-in-out;
     z-index: 1000;
-}
-
-.form-container-outer .toggle-form-display img {
-    transition: 0.5s ease-in-out;
 }
 
 .form-container {
@@ -134,54 +169,6 @@ body {
     overflow: hidden;
     padding: 16px;
     width: 340px;
-}
-
-.form-container h2 {
-    font-size: 20px;
-    font-weight: 600;
-    margin: 0;
-    margin-bottom: 24px;
-}
-
-.input-container {
-    margin-bottom: 12px;
-}
-
-.input-container label {
-    margin-bottom: 8px;
-}
-
-label {
-    display: block;
-}
-
-input:not([type=radio]),
-select {
-    border: 2px solid #C8C8C8;
-    border-radius: 8px;
-    padding: 0px 8px;
-    height: 40px;
-    width: 100%;
-}
-
-input[type='radio'] {
-    accent-color: #201F1F;
-    height: 16px;
-    width: 16px;
-}
-
-.display-mode-container {
-    margin-top: 12px;
-}
-
-.display-mode-container label {
-    display: inline-block;
-    user-select: none;
-}
-
-.display-mode-container input {
-    position: relative;
-    top: 3.5px;
 }
 
 .toggle-form-display {
@@ -199,6 +186,7 @@ input[type='radio'] {
 
 .toggle-form-display img {
     height: 100%;
+    transition: 0.5s ease-in-out;
     width: 100%;
 }
 
@@ -210,28 +198,55 @@ input[type='radio'] {
     transform: rotate(180deg);
 }
 
-.choosing-origin-point {
+.form-container h2 {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+    margin-bottom: 24px;
+}
+
+.form-group {
+    margin-bottom: 12px;
+}
+
+.form-group label {
+    margin-bottom: 8px;
+}
+
+.selecting-origin-point {
     color: #E2453C;
     border-color: #E2453C;
 }
 
-.choosing-origin-point:hover {
+.selecting-origin-point:hover {
     border-color: rgba(226, 69, 60, 0.6);
     background-color: #F8F2F1;
 }
 
-.origin-point-coord-container {
+.origin-point-coord {
     font-style: italic;
     margin-top: 6px;
 }
 
-#submit-button:disabled img {
-    animation: spin 1s linear infinite;
+.display-mode-container {
+    margin-top: 12px;
 }
 
-@keyframes spin {
-    100% {
-        -webkit-transform: rotate(360deg);
-        transform: rotate(360deg);
-    }
+.display-mode-container label {
+    display: inline-block;
+    user-select: none;
+}
+
+.display-mode-container input {
+    position: relative;
+    top: 3.5px;
+}
+
+.btn-cancel-request {
+    background-color: #E2453C;
+    border-color: #E2453C;
+}
+
+.btn-cancel-request img {
+    animation: spin 1s linear infinite;
 }

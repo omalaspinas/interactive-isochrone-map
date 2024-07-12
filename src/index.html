@@ -15,43 +15,36 @@
 
 <body class="marker-cursor">
     <div id="map"></div>
-    <div class="legend-container" id="legend-container" style="display: none;">
-        <div class="legend" id="legend">
-            <!--
-            <div class="legend-entry" style="background-color: green;">30 min.</div>
-            <div class="legend-entry" style="background-color: red;">30 min.</div>
-            -->
-        </div>
-    </div>
+
     <div class="form-container-outer" id="form-container-outer">
         <div class="form-container">
             <h2>Calculer une carte isochrone</h2>
 
             <form id="form">
-                <div class="input-container">
+                <div class="form-group">
                     <label>Point d'origine</label>
-                    <button class="btn btn-secondary" id="choose-origin-point" type="button">
+                    <button class="btn btn-secondary" id="select-origin-point" type="button">
                         <img src="./assets/images/origin-point.png" width="15"> Choisir le point d'origine
                     </button>
-                    <p class="origin-point-coord-container">Coordonnées : <span id="origin-point-coord">-</span></p>
+                    <p class="origin-point-coord">Coordonnées : <span id="origin-point-coord-value">-</span></p>
                 </div>
 
-                <div class="input-container">
+                <div class="form-group">
                     <label for="departure-at">Date et heure de départ</label>
                     <input type="datetime-local" id="departure-at" required>
                 </div>
 
-                <div class="input-container">
+                <div class="form-group">
                     <label for="time-limit">Limite de temps (en minutes)</label>
                     <input type="number" id="time-limit" min="10" max="480" value="60" required>
                 </div>
 
-                <div class="input-container">
+                <div class="form-group">
                     <label for="isochrone-interval">Intervalle entre les isochrones</label>
                     <select id="isochrone-interval" required></select>
                 </div>
 
-                <div class="input-container">
+                <div class="form-group">
                     <label>Mode d'affichage</label>
 
                     <div class="display-mode-container">
@@ -65,7 +58,6 @@
                 </div>
 
                 <div class="mt-6">
-
                     <button class="btn" id="submit-button" type="submit">
                         <img src="./assets/images/target.png" width="20" height="20"> Calculer
                     </button>
@@ -76,6 +68,15 @@
         <button class="toggle-form-display" id="toggle-form-display">
             <img src="./assets/images/double-caret.svg">
         </button>
+    </div>
+
+    <div class="legend-container" id="legend-container" style="display: none;">
+        <div class="legend" id="legend">
+            <!--
+            <div class="legend-entry" style="background-color: green;">30 min.</div>
+            <div class="legend-entry" style="background-color: red;">30 min.</div>
+            -->
+        </div>
     </div>
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
