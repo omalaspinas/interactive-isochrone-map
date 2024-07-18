@@ -51,9 +51,20 @@
                         <label>
                             <input type="radio" id="display-mode-circles" name="display_mode" required checked> Cercles
                         </label>
+                        <div class="tooltip">
+                            ?
+                            <div class="tooltip-content">
+                                L'affichage des isochrones est un chevauchement de cercles représentant la distance possible à parcourir à pied depuis chaque arrêt atteignable. Ce mode d'affiche est relativement rapide à calculer, mais peut être coûteux en ressource côté affichage, car il peut y avoir beaucoup de cercles à afficher. Il est le plus fidèle à la réalité.                            </div>
+                        </div>
                         <label>
                             <input type="radio" id="display-mode-contour-line" name="display_mode" required> Ligne de contour
                         </label>
+                        <div class="tooltip">
+                            ?
+                            <div class="tooltip-content">
+                                L'affichage des isochrones est fait à partir des lignes de contours calculées. Ce mode d'affiche peut s'avérer très à calculer dans certains cas. Il est relativement fidèle à la réalité, mais peut parfois représenter des zones qui ne peuvent pas être atteintes dans le temps limite de l'isochrone (problèmes des trous qui sont ignorés par la ligne de contour, car ils sont à l'intérieur de celle-ci). Cet affichage est plus esthétique et simple à lire.
+                            </div>
+                        </div>
                     </div>
                 </div>
 
