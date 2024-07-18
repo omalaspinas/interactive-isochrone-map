@@ -240,7 +240,7 @@ input[type='radio'] {
 }
 
 .display-mode-container label:not(:first-child) {
-    margin-left: 8px;
+    margin-left: 18px;
 }
 
 .display-mode-container input {
@@ -258,14 +258,15 @@ input[type='radio'] {
 }
 
 .tooltip {
-    background-color: #eeeded;;
+    background-color: #F9F9F9;
     border: 1px solid rgba(32, 31, 31, 0.6);
     border-radius: 50%;
     color: black;
     display: inline-block;
+    font-size: 12px;
     font-weight: bold;
     height: 16px;
-    line-height: 16px;
+    line-height: 15px;
     margin-left: 4px;
     position: relative;
     text-align: center;
@@ -277,13 +278,13 @@ input[type='radio'] {
 }
 
 .tooltip-content {
-    background-color: #eeeded;
+    background-color: #F9F9F9;
     border: 2px solid #C8C8C8;
     border-radius: 8px;
     bottom: 24px;
     display: none;
     left: 50%;
-    padding: 6px;
+    padding: 8px;
     position: absolute;
     overflow: visible;
     text-align: left;

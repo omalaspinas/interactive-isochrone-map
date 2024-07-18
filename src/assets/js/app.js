@@ -299,4 +299,4 @@ formElem.addEventListener('submit', async (e) => {
     submitButton.innerHTML = `<img src="./assets/images/target.png" width="20" height="20"> Calculer`;
 });
 
-// init();
+init();
