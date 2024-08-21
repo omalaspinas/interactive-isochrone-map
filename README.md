@@ -2,12 +2,27 @@
 
 Author: Florian Burgener
 
+## Installation
+
+```sh
+git clone https://github.com/florianburgener/hrdf-routing-engine
+git clone https://github.com/florianburgener/interactive-isochrone-map
+```
+
 ## Usage
 
-Routing engine (https://github.com/florianburgener/hrdf-routing-engine):
-```
+The first step is to start the routing engine:
+
+```sh
+cd hrdf-routing-engine
 # Starts the routing engine as web service (port 8100):
 cargo run --release -- serve
 ```
 
-First, you need to start the routing engine. Next, open the index.html file in the src folder.
+To start the application:
+
+```sh
+cd ..
+cd interactive-isochrone-map/src
+# You can open the index.html file with the browser of your choice.
+```
