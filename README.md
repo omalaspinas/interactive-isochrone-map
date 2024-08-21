@@ -2,6 +2,10 @@
 
 Author: Florian Burgener
 
+## Prerequisites
+
+* OpenSSL (`apt install libssl-dev` on Ubuntu)
+
 ## Installation
 
 ```sh
