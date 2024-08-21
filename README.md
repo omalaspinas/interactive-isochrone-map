@@ -19,7 +19,7 @@ The first step is to start the routing engine:
 
 ```sh
 cd hrdf-routing-engine
-# Starts the routing engine as web service (port 8100):
+# Starts the routing engine in web service mode (port 8100):
 cargo run --release -- serve
 ```
 
