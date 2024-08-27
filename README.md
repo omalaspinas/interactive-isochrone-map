@@ -4,7 +4,7 @@ Author: Florian Burgener
 
 ## Prerequisites
 
-* The Rust toolchain, see <https://www.rust-lang.org/>
+* Rust Toolchain (https://www.rust-lang.org/tools/install)
 * OpenSSL (`apt install libssl-dev` on Ubuntu)
 
 ## Installation
