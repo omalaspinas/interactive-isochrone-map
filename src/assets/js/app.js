@@ -88,9 +88,9 @@ const displayIsochroneMap = async () => {
         return;
     }
 
-    // Centers on the origin point and sets the appropriate zoom level.
-    map.fitBounds([isochroneMap.bounding_box[0], isochroneMap.bounding_box[1]], { animate: false });
-    map.setView([originPointCoord[0], originPointCoord[1]], undefined, { animate: false });
+    // // Centers on the origin point and sets the appropriate zoom level.
+    // map.fitBounds([isochroneMap.bounding_box[0], isochroneMap.bounding_box[1]], { animate: false });
+    // map.setView([originPointCoord[0], originPointCoord[1]], undefined, { animate: false });
 
     displayIsochrones(isochroneMap);
     legendContainer.style.display = 'block';
