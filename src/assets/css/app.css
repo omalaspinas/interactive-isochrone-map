@@ -2,6 +2,11 @@
 
 /* "Default" */
 
+:root {
+    --mobile-width: 768px;
+    --offset-hide-form-mobile: 0px;
+}
+
 * {
     box-sizing: border-box;
     font-family: "Montserrat", sans-serif;
@@ -88,6 +93,13 @@ input[type='radio'] {
     opacity: 1.0;
 }
 
+.btn-secondary.active {
+    background-color: #E2453C;
+    /* border-color: #E2453C; */
+    color: white;
+    opacity: 1.0;
+}
+
 /* Animation */
 
 @keyframes spin {
@@ -103,8 +115,15 @@ input[type='radio'] {
     height: 100vh;
 }
 
-.cursor-marker {
+/* .cursor-marker {
     cursor: url(./../images/marker.png) 16 38, auto !important;
+} */
+.cursor-marker-0 {
+    cursor: url(./../images/marker.png) 16 38, auto !important;
+}
+
+.cursor-marker-1 {
+    cursor: url(./../images/marker_red.png) 16 38, auto !important;
 }
 
 .leaflet-interactive {
@@ -255,4 +274,59 @@ input[type='radio'] {
 
 .btn-cancel-request img {
     animation: spin 1s linear infinite;
+}
+
+/* Mobile */
+.coord-mobile {
+    display: none;
+}
+
+@media only screen and (max-width: 900px) {
+
+    * {
+        font-size: 0.8rem;
+    }
+
+    :not(.hide-form) .toggle-form-display {
+        top: -56px;
+        right: 0px;
+        transition: 0.5s ease-in-out;
+    }
+
+    .hide-form .toggle-form-display {
+        /* top: 0px; */
+        right: -32px;
+        transition: 0.5s ease-in-out;
+    }
+
+    .form-container {
+
+        /* width: 290px; */
+    }
+
+    .hide-form {
+        /* left: calc(16px - 290px + var(--offset-hide-form-mobile)); */
+    }
+    .coord-mobile {
+        display: block;
+        position: fixed;
+    }
+
+    .aiming.hide-form>.coord-mobile {
+        bottom: 32px;
+        /* offset form */
+        left: 32px;
+        transition: 0.5s ease-in-out;
+    }
+    .coord-mobile {
+        bottom: -128px;
+        left: 32px;
+        transition: 0.5s ease-in-out;
+    }
+
+
+    .btn-validate-aim {
+        /* background-color: #167c16;
+        border-color: #167c16; */
+    }
 }

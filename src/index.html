@@ -22,11 +22,30 @@
 
             <form id="form">
                 <div class="form-group">
-                    <label>Point d'origine</label>
-                    <button class="btn btn-secondary" id="select-origin-point" type="button">
-                        <img src="./assets/images/origin-point.png" width="15"> Choisir le point d'origine
-                    </button>
+                    <label>Point d'origine n°1</label>
+                    <div style="display: flex; justify-content: space-between;">
+                        <button class="btn btn-secondary" id="select-origin-point" type="button" style="width: 80%;">
+                            <img src="./assets/images/origin-point.png" width="15"> Choisir le point d'origine
+                        </button>
+                        <button class="btn btn-secondary" id="lock-origin-point" type="button" style="width: 18%;">
+                            <img src="./assets/images/crosshair.png" width="15">
+                        </button>
+                    </div>
                     <p class="origin-point-coord">Coordonnées : <span id="origin-point-coord-value">-</span></p>
+                </div>
+                <div class="form-group">
+                    <label>Point d'origine n°2</label>
+
+                    <div style="display: flex; justify-content: space-between;">
+
+                        <button class="btn btn-secondary" id="select-origin-point-2" type="button" style="width: 80%;">
+                            <img src="./assets/images/origin-point.png" width="15"> Choisir le point d'origine
+                        </button>
+                        <button class="btn btn-secondary" id="lock-origin-point-2" type="button" style="width: 18%;">
+                            <img src="./assets/images/crosshair.png" width="15">
+                        </button>
+                    </div>
+                    <p class="origin-point-coord">Coordonnées : <span id="origin-point-coord-value-2">-</span></p>
                 </div>
 
                 <div class="form-group">
@@ -52,7 +71,8 @@
                             <input type="radio" id="display-mode-circles" name="display_mode" required checked> Cercles
                         </label>
                         <label>
-                            <input type="radio" id="display-mode-contour-line" name="display_mode" required> Ligne de contour
+                            <input type="radio" id="display-mode-contour-line" name="display_mode" required> Ligne de
+                            contour
                         </label>
                     </div>
                 </div>
@@ -68,7 +88,17 @@
         <button class="toggle-form-display" id="toggle-form-display">
             <img src="./assets/images/double-caret.svg">
         </button>
+
+        <div class="form-container coord-mobile">
+            <p class="origin-point-coord">Coordonnées : <span id="origin-point-coord-value-mobile">-</span></p>
+            <button class="btn btn-secondary btn-validate-aim" id="validate-aim" type="button" style="width: 100%;">
+                <img src="./assets/images/crosshair.png" width="20" height="20"> Valider
+            </button>
+        </div>
     </div>
+  
+        
+  
 
     <div class="legend-container" id="legend-container" style="display: none;">
         <div class="legend" id="legend">
