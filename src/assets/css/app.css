@@ -139,12 +139,22 @@ input[type='radio'] {
     bottom: 32px;
     box-shadow: 0px 4px 10px 0px rgba(0, 0, 0, 0.17);
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     padding: 8px;
     right: 32px;
     position: fixed;
     z-index: 1000;
 }
+
+.legend-container.hidden {
+    display: none;
+}
+
+.legend-container .column {
+    display: flex;
+    flex-direction: column;
+}
+
 
 .legend {
     border: 0;
@@ -155,9 +165,11 @@ input[type='radio'] {
 .legend-entry {
     color: black;
     height: 40px;
-    line-height: 40px;
+    /* line-height: 20px; */
     text-align: center;
     width: 96px;
+    margin-left: 2px;
+    margin-right: 2px;
 }
 
 .legend-entry:first-of-type {
@@ -170,7 +182,44 @@ input[type='radio'] {
     border-bottom-right-radius: 8px;
 }
 
+.legend-entry p {
+    margin: 0;
+}
+
+.legend-entry .timelimit {
+    /* line-height: 24px; */
+    line-height: 36px;
+}
+
+/* .legend-entry .area {
+    line-height: 16px; 
+    font-size: 10px;
+    opacity: 0.7;
+
+    font-weight: 600;
+}
+
+.legend-entry .area span {
+    font-size: 12px;
+} */
+
+.legend-controls {
+    align-items: center;
+    display: flex;
+    width: 96px;
+    display: block;
+}
+
+.legend-controls.hidden {
+    display: none;
+}
+
 /* Form */
+
+#form {
+    /* max-height: 80vh; */
+    /* overflow-y: scroll; */
+}
 
 .form-container-outer {
     bottom: 32px;
@@ -178,6 +227,7 @@ input[type='radio'] {
     position: fixed;
     transition: 0.5s ease-in-out;
     z-index: 1000;
+
 }
 
 .form-container {
@@ -185,9 +235,12 @@ input[type='radio'] {
     border: 2px solid #C8C8C8;
     border-radius: 16px;
     box-shadow: 0px 4px 10px 0px rgba(0, 0, 0, 0.17);
-    overflow: visible;
     padding: 16px;
-    width: 340px;
+    max-width: 340px;
+
+    /* Cap form to 80% of the viewport height, scroll if necessary */
+    max-height: 80vh;
+    overflow: scroll;
 }
 
 .toggle-form-display {
@@ -276,6 +329,53 @@ input[type='radio'] {
     animation: spin 1s linear infinite;
 }
 
+
+/* Form controls point 2 */
+
+#ctrls-point-2-hidden {
+    /* display: block; */
+    max-height: 32px;
+    overflow: hidden;
+    transition: 0.2s ease-in-out;
+}
+
+#ctrls-point-2-inner {
+    /* display: none; */
+    max-height: 0px;
+    overflow: hidden;
+    transition: 0.2s ease-in-out;
+}
+
+#ctrls-point-2-hidden.hidden {
+    max-height: 0px;
+    /* display: none; */
+    transition: 0.2s ease-in-out;
+}
+
+#ctrls-point-2-inner.hidden {
+    /* display: block; */
+    max-height: 100px;
+    overflow: hidden;
+    transition: 0.2s ease-in-out;
+}
+
+.closable-label {
+    display: flex;
+    justify-content: space-between;
+}
+
+.clickable-label {
+    cursor: pointer;
+    font-weight: 600;
+    color: #201f1f80;
+    text-decoration: none;
+}
+
+.clickable-label:hover {
+    color: #201F1F;
+    text-decoration: none;
+}
+
 /* Mobile */
 .coord-mobile {
     display: none;
@@ -288,28 +388,23 @@ input[type='radio'] {
     }
 
     :not(.hide-form) .toggle-form-display {
+        /* position: fixed; */
         top: -56px;
         right: 0px;
         transition: 0.5s ease-in-out;
     }
 
     .hide-form .toggle-form-display {
-        /* top: 0px; */
-        right: -32px;
+        top: 0px;
+        right: -56px;
         transition: 0.5s ease-in-out;
     }
 
-    .form-container {
-
-        /* width: 290px; */
-    }
-
-    .hide-form {
-        /* left: calc(16px - 290px + var(--offset-hide-form-mobile)); */
-    }
     .coord-mobile {
         display: block;
         position: fixed;
+        width: calc(100% - 64px);
+
     }
 
     .aiming.hide-form>.coord-mobile {
@@ -318,15 +413,32 @@ input[type='radio'] {
         left: 32px;
         transition: 0.5s ease-in-out;
     }
+
     .coord-mobile {
         bottom: -128px;
         left: 32px;
         transition: 0.5s ease-in-out;
     }
 
+    /* Legends */
 
-    .btn-validate-aim {
-        /* background-color: #167c16;
-        border-color: #167c16; */
+    .legend-entry {
+        height: 16px;
+        line-height: 16px;
+        width: 48px;
+    }
+
+    .legend-controls {
+        width: 48px;
+    }
+
+}
+
+@media only screen and (orientation:landscape) and (max-width: 900px) {
+    :not(.hide-form) .toggle-form-display {
+        /* position: fixed; */
+        top: 56px;
+        right: -56px;
+        transition: 0.5s ease-in-out;
     }
 }

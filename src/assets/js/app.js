@@ -1,46 +1,73 @@
 const mapElem = document.getElementById('map');
 
+/** Pretty Palettes ! */
+const palette1 = [
+    '#36AB68', // Nearest.
+    '#91CF60', //
+    '#D7FF67', //
+    '#FFD767', // 
+    '#FC8D59', // 
+    '#E2453C', // Furthest.
+];
+const palette2 = [
+    "#00ffef",
+    "#00aeeb",
+    "#3982d1",
+    "#6b62b7",
+    "#a24eaa",
+    "#cd2f88"
+];
+
 const legendContainer = document.getElementById("legend-container");
 const legend = document.getElementById("legend");
-
+const legend2 = document.getElementById("legend-2");
 // Form.
 const formContainerOuter = document.getElementById("form-container-outer");
 const toggleFormDisplay = document.getElementById("toggle-form-display");
 const formElem = document.getElementById('form');
-const selectOriginPointElem = document.getElementById("select-origin-point");
+const selectOriginPointElem1 = document.getElementById("select-origin-point-1");
 const selectOriginPointElem2 = document.getElementById("select-origin-point-2");
-const originPointCoordValueElem = document.getElementById('origin-point-coord-value');
-const originPointCoordValueElem2 = document.getElementById('origin-point-coord-value-2');
+
 const originPointCoordValueMobileElem = document.getElementById('origin-point-coord-value-mobile');
 const departureAtInput = document.getElementById("departure-at");
 const timeLimitInput = document.getElementById("time-limit");
 const isochroneIntervalInput = document.getElementById("isochrone-interval");
 const displayModeCirclesInput = document.getElementById("display-mode-circles");
 const displayModeContourLineInput = document.getElementById("display-mode-contour-line");
-const btnAimMode = document.getElementById("lock-origin-point");
+const btnAimMode1 = document.getElementById("lock-origin-point-1");
 const btnAimMode2 = document.getElementById("lock-origin-point-2");
 const btnValidateAim = document.getElementById("validate-aim");
 const submitButton = document.getElementById('submit-button');
 
+/* Second point controls */
+
+const ctrlsPointTwo = document.getElementById("ctrls-point-2");
+const ctrlsPointTwoHidden = document.getElementById("ctrls-point-2-hidden");
+const ctrlsPointTwoInner = document.getElementById("ctrls-point-2-inner");
+const closeOriginPoint2 = document.getElementById("close-origin-point-2");
 let isAiming = false;
-let originPointOffset = [0, 0];
-let originPointOffset2 = [0, 0];
-let originPointOffsets = [originPointOffset, originPointOffset2];
+// let originPointOffset = [0, 0];
+// let originPointOffset2 = [0, 0];
+let originPointOffsets = [[0, 0], [0, 0]];
 let isSelectingOriginPoint = false;
 let isSelectingOriginPoint_markerIndex = 0;
 
 let markers = [null, null];
 
-let selectOriginPointElems = [selectOriginPointElem, selectOriginPointElem2];
-let originPointCoordValueElems = [originPointCoordValueElem, originPointCoordValueElem2];
+let selectOriginPointElems = [selectOriginPointElem1, selectOriginPointElem2];
+let originPointCoordValueElem1 = document.getElementById('origin-point-coord-value-1');
+let originPointCoordValueElem2 = document.getElementById('origin-point-coord-value-2');
+let originPointCoordValueElems = [originPointCoordValueElem1, originPointCoordValueElem2];
 
 let originPointMarker = null;
 let isochronesLayer = null;
-let originPointCoord = null;
-let originPointCoord2 = null;
-let originPointCoords = [originPointCoord, originPointCoord2];
+// let originPointCoord = null;
+// let originPointCoord2 = null;
+let originPointCoords = [null, null];
 let isFormSubmitted = false;
 let abortController = new AbortController();
+
+let legendControls_opacitySliders = document.querySelectorAll('.legend-controls input[type="range"]');
 
 let isMapMoving = false;
 
@@ -68,17 +95,23 @@ const map = L.map('map').setView([centerLat, centerLng], 11);
 
 const init = () => {
     setMinMaxDepartureAt();
-    departureAtInput.value = getCurrentDateTime();
+    // departureAtInput.value = getCurrentDateTime();
+    // departureAtInput.value = departureAtInput.max;
     updateIsochroneIntervalOptions();
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    var baseMap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    }).addTo(map);
+    });
+    baseMap.addTo(map);
+    map.createPane('isochrones0');
+    map.getPane('isochrones0').style.opacity = 0.6;
+    map.createPane('isochrones1');
+    map.getPane('isochrones1').style.opacity = 0.6;
 };
 
 const setMinMaxDepartureAt = async () => {
     try {
-        const response = await fetch('http://localhost:8100/metadata');
+        const response = await fetch('http://10.136.217.209:8100/metadata');
         const metadata = await response.json();
 
         departureAtInput.min = metadata.start_date + " 00:00";
@@ -89,17 +122,19 @@ const setMinMaxDepartureAt = async () => {
     }
 };
 
-const displayIsochroneMap = async () => {
-    if (originPointCoord === null) {
+const displayIsochroneMap = async (idx, clear = true) => {
+    if (originPointCoords[idx] === null) {
         alert("Vous devez d'abord choisir un point d'origine.");
         return;
     }
 
-    clearPreviousIsochroneMap();
+    if (clear) {
+        clearPreviousIsochroneMap();
+    }
     let isochroneMap;
 
     try {
-        const response = await fetch('http://localhost:8100/isochrones?' + new URLSearchParams(getRequestParams()).toString(), {
+        const response = await fetch('http://10.136.217.209:8100/isochrones?' + new URLSearchParams(getRequestParams(idx)).toString(), {
             signal: abortController.signal,
         });
         isochroneMap = await response.json();
@@ -121,25 +156,24 @@ const displayIsochroneMap = async () => {
     // map.fitBounds([isochroneMap.bounding_box[0], isochroneMap.bounding_box[1]], { animate: false });
     // map.setView([originPointCoord[0], originPointCoord[1]], undefined, { animate: false });
 
-    displayIsochrones(isochroneMap);
-    legendContainer.style.display = 'block';
+    displayIsochrones(isochroneMap, idx);
+    legendContainer.classList.remove('hidden');
 
     isochronesLayer.addTo(map);
-    isochronesLayer.getPane().style.opacity = 0.6;
 };
 
 const clearPreviousIsochroneMap = () => {
     legend.innerHTML = '';
-    legendContainer.style.display = 'none';
+    legend2.innerHTML = '';
+    document.querySelectorAll('.legend-controls').forEach(elem => elem.classList.add('hidden'));
 
     if (isochronesLayer !== null) {
         isochronesLayer.remove();
     }
-
     isochronesLayer = L.layerGroup();
 };
 
-const getRequestParams = () => {
+const getRequestParams = (idx = 0) => {
     const departureDate = departureAtInput.value.split('T')[0];
     const departureTime = departureAtInput.value.split('T')[1];
     const timeLimit = timeLimitInput.value;
@@ -147,8 +181,8 @@ const getRequestParams = () => {
     const displayMode = getDisplayMode();
 
     const params = {
-        origin_point_latitude: originPointCoord[0],
-        origin_point_longitude: originPointCoord[1],
+        origin_point_latitude: originPointCoords[idx][0],
+        origin_point_longitude: originPointCoords[idx][1],
         departure_date: departureDate,
         departure_time: departureTime,
         time_limit: timeLimit,
@@ -160,16 +194,16 @@ const getRequestParams = () => {
 };
 
 
-const displayIsochrones = (isochroneMap) => {
-    const palette = [
-        '#36AB68', // Green 1.
-        '#91CF60', // Green 2.
-        '#D7FF67', // Green 3.
-        '#FFD767', // Yellow.
-        '#FC8D59', // Orange.
-        '#E2453C', // Red.
-    ];
+const displayIsochrones = async (isochroneMap, index = 0) => {
 
+    let legend_div = legend;
+
+    let pane = index === 0 ? "isochrones0" : "isochrones1";
+    if (index === 1) {
+        legend_div = legend2;
+    }
+
+    let palette = index === 0 ? palette1 : palette2;
     // Use the appropriate colors depending on the number of isochrones to be displayed.
     const colors = [
         [0],
@@ -180,32 +214,133 @@ const displayIsochrones = (isochroneMap) => {
         [0, 1, 2, 3, 4, 5],
     ][isochroneMap.isochrones.length - 1].map(index => palette[index]).reverse();
 
+    area_totals = [0, 0, 0, 0, 0, 0]
+    polys = []
     // Displays isochrones by layer from largest to smallest.
     for (const [i, isochrone] of isochroneMap.isochrones.reverse().entries()) {
+        the_polys = []
         const color = colors[i];
-
         for (const polygon of isochrone.polygons) {
+
             let latlngs = [];
 
             for (const point of polygon) {
                 latlngs.push([point.x, point.y]);
             }
 
-            L.polygon(latlngs, {
+            let poly = L.polygon(latlngs, {
                 color: getDisplayMode() === 'contour_line' ? 'black' : 'transparent',
                 weight: 1.0,
                 fillColor: color,
                 fillOpacity: 1.0,
-            }).addTo(isochronesLayer);
-        }
+                pane: pane
+            })
 
-        legend.innerHTML = `
-            <div class="legend-entry" style="background-color: ${color};">
-                ${isochrone.time_limit} min.
-            </div>
-            ` + legend.innerHTML;
+            poly.addTo(isochronesLayer);
+            the_polys.push(poly.toGeoJSON());
+        }
+        legend_div.appendChild(createLegend(color, isochrone.time_limit, i, index));
+        polys.push(the_polys);
     }
+
+    // console.log("All polys", polys);
+    // console.log("All poly lengths", polys.length);
+    // 
+    // setAreasInLegend(area_totals, index);
+    // Displays the opacity controls for the adequate isochrones.
+    let slider = document.querySelector(`#legend-controls-${index + 1}`);
+    slider.classList.remove('hidden');
+    // for (let i = 0; i < polys.length; i++) {
+    //     fused = await mergePolys(polys[i]);
+    //     console.log(fused);
+    //     fused_2 = L.GeoJSON.geometryToLayer(fused);
+    //     isochronesLayer.addLayer(fused_2);
+    // }
+  
 };
+
+const GetAreaUnion = async (poly_list) => {
+    if (poly_list.length === 0) {
+        throw new Error("Cannot compute union of empty polygon list");
+    } else if (poly_list.length === 1) {
+        return L.GeoJSON.geometryToLayer(poly_list[0]);
+    } else {
+        let turfpolys = [];
+        for (let p = 0; p < poly_list.length; p++) {
+            turfpoly = turf.polygon(poly_list[p].geometry.coordinates);
+            turfpolys.push(turfpoly);
+        }
+        union = turf.union(turf.featureCollection(turfpolys));
+        return L.GeoJSON.geometryToLayer(union);
+    }
+}
+
+async function mergePolys(polys) {
+    function work({data}) {
+        // console.log(data);
+        // postMessage(data);
+        importScripts('https://cdn.jsdelivr.net/npm/@turf/turf@7/turf.min.js');
+        if (data.length === 0) {
+            throw new Error("Cannot compute union of empty polygon list");
+        } else if (data.length === 1) {
+            postMessage(data[0]);
+        } else {
+            let turfpolys = [];
+            for (let p = 0; p < data.length; p++) {
+                turfpoly = turf.polygon(data[p].geometry.coordinates);
+                console.log("PUSHING THE POLYGOOOOOON")
+                turfpolys.push(turfpoly);
+            }
+            union = turf.union(turf.featureCollection(turfpolys));
+            postMessage(union);
+        }
+    }
+    let blob = new Blob(["onmessage =" + work.toString()], { type: 'application/javascript' });
+    let worker = new Worker(URL.createObjectURL(blob));
+    worker.postMessage(polys);
+
+    return await new Promise(resolve => worker.onmessage = e => resolve(e.data));
+}
+
+
+const setAreasInLegend = (areas, index) => {
+    //Skip last one since it's always 0
+    for (i = 0; i < areas.length - 1; i++) {
+        // console.log(`area-value-${index + 1}-${i}`)
+        document.getElementById(`area-value-${index + 1}-${i}`).innerHTML = areas[i].toFixed(2);
+    }
+}
+
+const getPolyArea = (poly) => {
+    var area = 0;
+    for (island of poly.getLatLngs()) {
+        // If the polygon is non-contiguous, access the island
+        if (island.length < 2) {
+            island = island[0]
+        }
+        // Sum the area within each "island"
+        area += L.GeometryUtil.geodesicArea(island);
+    }
+    return area;
+}
+
+const createLegend = (color, time_limit, time_limit_index, isoIndex = 0) => {
+    //Create a new legend entry element
+    const legendElement = document.createElement('div');
+    legendElement.className = 'legend-entry';
+    //Set legend color
+    legendElement.style.backgroundColor = color;
+    //Create time limit label
+    const timeLimitElement = document.createElement('p');
+    timeLimitElement.className = 'timelimit';
+    timeLimitElement.textContent = `${time_limit} min.`;
+    // const areaLabelElement = document.createElement('p');
+    // areaLabelElement.className = 'area';
+    // areaLabelElement.innerHTML = `<span id="area-value-${isoIndex + 1}-${time_limit_index}"></span> km²`;
+    legendElement.appendChild(timeLimitElement);
+    // legendElement.appendChild(areaLabelElement);
+    return legendElement;
+}
 
 // Updates the isochrone interval options and sets the default to the maximum number of isochrones possible.
 const updateIsochroneIntervalOptions = () => {
@@ -264,7 +399,7 @@ const createMarker = (lat, lng, index = 0) => {
         marker = customMarker2;
     }
     console.log(marker);
-    return L.marker([lat, lng], { icon: marker }).addTo(map);
+    return L.marker([lat, lng], { icon: marker, zIndexOffset: 1600 }).addTo(map);
 };
 
 /**
@@ -288,6 +423,9 @@ const setCoordValue = (index, lat, lng) => {
         //Abort
         return;
     }
+    if (lat === null || lng === null) {
+        originPointCoordValueElems[index].innerHTML = '-';
+    }
     originPointCoordValueElems[index].innerHTML = `${lat.toFixed(8)} ${lng.toFixed(8)}`;
     if (originPointCoordValueMobileElem !== null) {
         originPointCoordValueMobileElem.innerHTML = `${lat.toFixed(8)} ${lng.toFixed(8)}`;
@@ -295,7 +433,7 @@ const setCoordValue = (index, lat, lng) => {
 };
 
 const EndMarkerPlacement = function (markerIndex) {
-    if (isMobileResolution()) {
+    if (isTabletResolution()) {
         showForm();
     }
     mapElem.classList.remove(`cursor-marker-${markerIndex}`);
@@ -323,6 +461,15 @@ const isMobileResolution = () => {
     return false;
 }
 
+const isTabletResolution = () => {
+    if (screen.width < 960) {
+        return true;
+    }
+    return false;
+}
+
+
+
 const MoveMapToPoint = (lat, lng, animate = true) => {
     isMapMoving = true;
     map.setView([lat, lng], undefined, { animate: animate });
@@ -336,14 +483,19 @@ const ToggleFormDisplay = () => {
     }
 }
 
+const resetCoordinates = (markerIndex) => {
+    originPointCoords[markerIndex] = [null, null];
+    setCoordValue(markerIndex, originPointCoords[markerIndex][0], originPointCoords[markerIndex][1]);
+}
+
 const ValidateAim = () => {
     if (isAiming) {
         //Disable aiming mode.
         isAiming = false;
-        btnAimMode.classList.remove('active');
+        btnAimMode1.classList.remove('active');
         btnAimMode2.classList.remove('active');
         // isAiming = false;
-        if (isMobileResolution()) {
+        if (isTabletResolution()) {
             showForm();
         }
     }
@@ -360,6 +512,25 @@ const showForm = () => {
     formContainerOuter.classList.remove("hide-form");
     formContainerOuter.classList.remove("aiming");
 }
+
+const bringToFront = (isoIndex) => {
+    if (isoIndex < 0 || isoIndex > 1) {
+        throw new Error("Invalid Index when trying to bring to front.");
+    }
+
+    if (isoIndex === 0) {
+        map.getPane("isochrones0").style.zIndex = 1000;
+        map.getPane("isochrones1").style.zIndex = 700;
+    } else {
+        map.getPane("isochrones0").style.zIndex = 700;
+        map.getPane("isochrones1").style.zIndex = 1000;
+    }
+    let markerPane = document.getElementsByClassName("leaflet-pane leaflet-marker-pane")[0];
+    if (markerPane !== undefined || markerPane !== null) {
+        markerPane.style.zIndex = 2000;
+    }
+
+};
 
 // Event listeners.
 
@@ -380,21 +551,21 @@ timeLimitInput.addEventListener('change', () => {
 });
 
 // Handles the application's behavior when a point of origin is being selected.
-selectOriginPointElem.addEventListener("click", () => {
+selectOriginPointElem1.addEventListener("click", () => {
     if (isAiming) {
         //Disable aiming mode.
         isAiming = false;
-        btnAimMode.classList.remove('active');
+        btnAimMode1.classList.remove('active');
         btnAimMode2.classList.remove('active');
     }
-    if (selectOriginPointElem.classList.contains("selecting-origin-point")) {
+    if (selectOriginPointElem1.classList.contains("selecting-origin-point")) {
         EndMarkerPlacement(0);
-        if (isMobileResolution()) {
+        if (isTabletResolution()) {
             showForm();
         }
     } else {
         StartMarkerPlacement(0);
-        if (isMobileResolution()) {
+        if (isTabletResolution()) {
             hideForm();
         }
     }
@@ -404,17 +575,17 @@ selectOriginPointElem2.addEventListener("click", () => {
     if (isAiming) {
         //Disable aiming mode.
         isAiming = false;
-        btnAimMode.classList.remove('active');
+        btnAimMode1.classList.remove('active');
         btnAimMode2.classList.remove('active');
     }
     if (selectOriginPointElem2.classList.contains("selecting-origin-point")) {
         EndMarkerPlacement(1);
-        if (isMobileResolution()) {
+        if (isTabletResolution()) {
             showForm();
         }
     } else {
         StartMarkerPlacement(1);
-        if (isMobileResolution()) {
+        if (isTabletResolution()) {
             hideForm();
         }
     }
@@ -452,8 +623,8 @@ map.on('move', (e) => {
     markers[index] = createMarker(originPointCoords[index][0], originPointCoords[index][1], index);
 
     mapElem.classList.remove('cursor-marker');
-    selectOriginPointElem.classList.remove("selecting-origin-point");
-    selectOriginPointElem.innerHTML = `<img src="./assets/images/origin-point.png" width="15"> Changer de point d'origine`;
+    selectOriginPointElem1.classList.remove("selecting-origin-point");
+    selectOriginPointElem1.innerHTML = `<img src="./assets/images/origin-point.png" width="15"> Changer de point d'origine`;
     // originPointCoordValueElems[index].innerHTML = `${originPointCoords[index][0].toFixed(8)} ${originPointCoords[index][1].toFixed(8)}`;
     setCoordValue(index, originPointCoords[index][0], originPointCoords[index][1]);
     isSelectingOriginPoint = false;
@@ -485,19 +656,19 @@ map.on('click', (e) => {
 
 });
 
-btnAimMode.addEventListener('click', () => {
+btnAimMode1.addEventListener('click', () => {
     //Disable aim mode of other marker if enabled
     btnAimMode2.classList.remove('active');
 
     if (isAiming && isSelectingOriginPoint_markerIndex === 0) {
-        btnAimMode.classList.remove('active');
+        btnAimMode1.classList.remove('active');
         isAiming = false;
-        if (isMobileResolution()) {
+        if (isTabletResolution()) {
             showForm();
         }
     } else {
         //Enable aim mode
-        btnAimMode.classList.add('active');
+        btnAimMode1.classList.add('active');
         isAiming = true;
         isSelectingOriginPoint_markerIndex = 0;
         if (markers[0] === null) {
@@ -507,7 +678,7 @@ btnAimMode.addEventListener('click', () => {
         }
         MoveMapToPoint(originPointCoords[0][0], originPointCoords[0][1], true);
         EndMarkerPlacement(0);
-        if (isMobileResolution()) {
+        if (isTabletResolution()) {
             hideForm();
         }
     }
@@ -516,12 +687,12 @@ btnAimMode.addEventListener('click', () => {
 
 btnAimMode2.addEventListener('click', () => {
     //Disable aim mode of other marker if enabled
-    btnAimMode.classList.remove('active');
+    btnAimMode1.classList.remove('active');
     if (isAiming && isSelectingOriginPoint_markerIndex === 1) {
         //Disable aim mode
         btnAimMode2.classList.remove('active');
         isAiming = false;
-        if (isMobileResolution()) {
+        if (isTabletResolution()) {
             showForm();
         }
     } else {
@@ -536,7 +707,7 @@ btnAimMode2.addEventListener('click', () => {
         }
         MoveMapToPoint(originPointCoords[1][0], originPointCoords[1][1], true);
         EndMarkerPlacement(1);
-        if (isMobileResolution()) {
+        if (isTabletResolution()) {
             hideForm();
         }
     }
@@ -544,6 +715,19 @@ btnAimMode2.addEventListener('click', () => {
 
 btnValidateAim.addEventListener('click', () => {
     ValidateAim();
+});
+
+
+ctrlsPointTwoHidden.addEventListener('click', () => {
+    ctrlsPointTwoHidden.classList.toggle('hidden');
+    ctrlsPointTwoInner.classList.toggle('hidden');
+});
+
+closeOriginPoint2.addEventListener('click', () => {
+    ctrlsPointTwoHidden.classList.toggle('hidden');
+    ctrlsPointTwoInner.classList.toggle('hidden');
+    removeMarker(1);
+    resetCoordinates(1);
 });
 
 formElem.addEventListener('submit', async (e) => {
@@ -559,13 +743,32 @@ formElem.addEventListener('submit', async (e) => {
     submitButton.classList.add('btn-cancel-request');
     submitButton.innerHTML = `<img src="./assets/images/target.png" width="20" height="20"> Annuler`;
 
-    await displayIsochroneMap();
+    await displayIsochroneMap(0);
+    if (originPointCoords[1] !== null) {
+        await displayIsochroneMap(1, false);
+    }
 
-    console.log("here");
+    // console.log("here");
 
     isFormSubmitted = false;
     submitButton.classList.remove('btn-cancel-request');
     submitButton.innerHTML = `<img src="./assets/images/target.png" width="20" height="20"> Calculer`;
 });
+
+legendControls_opacitySliders.forEach(ctrl => {
+    ctrl.addEventListener('input', () => {
+        console.log(ctrl.value);
+        map.getPane("isochrones" + ctrl.dataset.isoindex).style.opacity = ctrl.value / 100;
+    });
+});
+
+legend.addEventListener('click', (e) => {
+    bringToFront(0)
+});
+
+legend2.addEventListener('click', (e) => {
+    bringToFront(1)
+});
+
 
 init();
