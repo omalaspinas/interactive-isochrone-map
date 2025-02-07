@@ -153,6 +153,7 @@ input[type='radio'] {
 .legend-container .column {
     display: flex;
     flex-direction: column;
+    max-width: 100px;
 }
 
 
@@ -170,6 +171,9 @@ input[type='radio'] {
     width: 96px;
     margin-left: 2px;
     margin-right: 2px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .legend-entry:first-of-type {
@@ -184,29 +188,31 @@ input[type='radio'] {
 
 .legend-entry p {
     margin: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .legend-entry .timelimit {
     /* line-height: 24px; */
-    line-height: 36px;
+    /* line-height: 36px; */
+    flex-grow: 2;
+    font-size: 1em;
 }
 
-/* .legend-entry .area {
-    line-height: 16px; 
-    font-size: 10px;
-    opacity: 0.7;
-
-    font-weight: 600;
+.legend-entry .area {
+    flex-grow: 1;
+    font-size: 0.8em;
 }
 
 .legend-entry .area span {
     font-size: 12px;
-} */
+} 
 
 .legend-controls {
     align-items: center;
     display: flex;
-    width: 96px;
+    width: calc(96px - 2px);
     display: block;
 }
 
@@ -423,8 +429,8 @@ input[type='radio'] {
     /* Legends */
 
     .legend-entry {
-        height: 16px;
-        line-height: 16px;
+        /* height: 16px; */
+        /* line-height: 16px; */
         width: 48px;
     }
 
@@ -441,4 +447,41 @@ input[type='radio'] {
         right: -56px;
         transition: 0.5s ease-in-out;
     }
+}
+
+
+
+
+/* That awesome spinner ! */
+
+
+.lds-dual-ring,
+.lds-dual-ring:after {
+  box-sizing: border-box;
+}
+.lds-dual-ring {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin: auto;
+  color: #20202080;
+}
+.lds-dual-ring:after {
+  content: " ";
+  display: block;
+  width: 16px;
+  height: 16px;
+  color: #20202080;
+  border-radius: 50%;
+  border: 6.4px solid currentColor;
+  border-color: currentColor transparent currentColor transparent;
+  animation: lds-dual-ring 1.2s linear infinite;
+}
+@keyframes lds-dual-ring {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }

@@ -1,5 +1,7 @@
 const mapElem = document.getElementById('map');
 
+// const HRDF_SERVER_URL = "http://10.136.217.209:8100"; //Local
+const HRDF_SERVER_URL = "http://100.64.0.218:8100"; //Local
 /** Pretty Palettes ! */
 const palette1 = [
     '#36AB68', // Nearest.
@@ -53,6 +55,8 @@ let isSelectingOriginPoint = false;
 let isSelectingOriginPoint_markerIndex = 0;
 
 let markers = [null, null];
+let furthestMarkers = [null, null];
+let workers = [];
 
 let selectOriginPointElems = [selectOriginPointElem1, selectOriginPointElem2];
 let originPointCoordValueElem1 = document.getElementById('origin-point-coord-value-1');
@@ -65,13 +69,17 @@ let isochronesLayer = null;
 // let originPointCoord2 = null;
 let originPointCoords = [null, null];
 let isFormSubmitted = false;
+let isWorkersRunning = false;
 let abortController = new AbortController();
-
+let workerAbortController = new AbortController();
 let legendControls_opacitySliders = document.querySelectorAll('.legend-controls input[type="range"]');
 
 let isMapMoving = false;
 
 let onMarkerPlacementEndCallback = null;
+
+
+const spinner = `<div class="lds-dual-ring"></div>`
 
 const customMarker = L.icon({
     iconUrl: './assets/images/marker.png',
@@ -84,6 +92,18 @@ const customMarker2 = L.icon({
     iconSize: [32, 38],
     iconAnchor: [16, 38],
 });
+
+const pin = L.icon({
+    iconUrl: './assets/images/pin.svg',
+    iconSize: [24, 24],
+    iconAnchor: [12, 24],
+});
+
+const pin2 = L.icon({
+    iconUrl: './assets/images/pin_red.svg',
+    iconSize: [24, 24],
+    iconAnchor: [12, 24],
+}); 
 
 // Geneva coordinates:
 const centerLat = 46.204519704052466;
@@ -111,7 +131,7 @@ const init = () => {
 
 const setMinMaxDepartureAt = async () => {
     try {
-        const response = await fetch('http://10.136.217.209:8100/metadata');
+        const response = await fetch(HRDF_SERVER_URL + '/metadata');
         const metadata = await response.json();
 
         departureAtInput.min = metadata.start_date + " 00:00";
@@ -134,7 +154,7 @@ const displayIsochroneMap = async (idx, clear = true) => {
     let isochroneMap;
 
     try {
-        const response = await fetch('http://10.136.217.209:8100/isochrones?' + new URLSearchParams(getRequestParams(idx)).toString(), {
+        const response = await fetch(HRDF_SERVER_URL + '/isochrones?' + new URLSearchParams(getRequestParams(idx)).toString(), {
             signal: abortController.signal,
         });
         isochroneMap = await response.json();
@@ -166,7 +186,9 @@ const clearPreviousIsochroneMap = () => {
     legend.innerHTML = '';
     legend2.innerHTML = '';
     document.querySelectorAll('.legend-controls').forEach(elem => elem.classList.add('hidden'));
-
+    // Remove the furthest point markers if they're present
+    removeFurthestMarker(0)
+    removeFurthestMarker(1)
     if (isochronesLayer !== null) {
         isochronesLayer.remove();
     }
@@ -196,13 +218,8 @@ const getRequestParams = (idx = 0) => {
 
 const displayIsochrones = async (isochroneMap, index = 0) => {
 
-    let legend_div = legend;
-
+    let legend_div = index === 0 ? legend : legend2;
     let pane = index === 0 ? "isochrones0" : "isochrones1";
-    if (index === 1) {
-        legend_div = legend2;
-    }
-
     let palette = index === 0 ? palette1 : palette2;
     // Use the appropriate colors depending on the number of isochrones to be displayed.
     const colors = [
@@ -214,20 +231,17 @@ const displayIsochrones = async (isochroneMap, index = 0) => {
         [0, 1, 2, 3, 4, 5],
     ][isochroneMap.isochrones.length - 1].map(index => palette[index]).reverse();
 
-    area_totals = [0, 0, 0, 0, 0, 0]
-    polys = []
+    let all_polygons = []
     // Displays isochrones by layer from largest to smallest.
     for (const [i, isochrone] of isochroneMap.isochrones.reverse().entries()) {
-        the_polys = []
+        let iso_polygons = []
         const color = colors[i];
         for (const polygon of isochrone.polygons) {
-
             let latlngs = [];
-
             for (const point of polygon) {
                 latlngs.push([point.x, point.y]);
             }
-
+            // Build the polygon
             let poly = L.polygon(latlngs, {
                 color: getDisplayMode() === 'contour_line' ? 'black' : 'transparent',
                 weight: 1.0,
@@ -235,48 +249,123 @@ const displayIsochrones = async (isochroneMap, index = 0) => {
                 fillOpacity: 1.0,
                 pane: pane
             })
-
+            // Draw the polygon on the layer 
             poly.addTo(isochronesLayer);
-            the_polys.push(poly.toGeoJSON());
+            // Add it to the polygon list
+            iso_polygons.push(poly.toGeoJSON());
         }
+        // Append the legend entry
         legend_div.appendChild(createLegend(color, isochrone.time_limit, i, index));
-        polys.push(the_polys);
+        // Add the sublist to the list of all polygons
+        all_polygons.push(iso_polygons);
     }
 
-    // console.log("All polys", polys);
-    // console.log("All poly lengths", polys.length);
-    // 
-    // setAreasInLegend(area_totals, index);
-    // Displays the opacity controls for the adequate isochrones.
+    // Show the opacity slider for the current isochrone map
     let slider = document.querySelector(`#legend-controls-${index + 1}`);
     slider.classList.remove('hidden');
-    // for (let i = 0; i < polys.length; i++) {
-    //     fused = await mergePolys(polys[i]);
-    //     console.log(fused);
-    //     fused_2 = L.GeoJSON.geometryToLayer(fused);
-    //     isochronesLayer.addLayer(fused_2);
-    // }
-  
+
+
+    // Merge the polygons
+    let aborted = false;
+    // Iterate backwards, compute smallest area first
+    for (let i = all_polygons.length - 1; i >= 0; i--) {
+        if (aborted) {
+            //The work has been aborted, report.
+            setAreaInLegend("ABORTED", index, i);
+            continue;
+        }
+        console.log(`Merging the polygons for isochrone ${i + 1}, time limit ${i}. Merging ${all_polygons[i].length} polygons`);
+        // Show a spinner while the worker is running
+        setAreaInLegend(spinner, index, i);
+        try {
+            fused = await mergePolys(all_polygons[i]);
+            setAreaInLegend(toKm2(turf.area(fused)) + " km²", index, i);
+        } catch (err) {
+            // The worker has been aborted
+            console.log(err);
+            aborted = true;
+            setAreaInLegend("ABORTED", index, i);
+        }
+        if (i === 0) {
+            //We're processing the largest area, use it to find the furthest point
+            findFurthest(fused, index);
+        }
+    }
+
 };
 
-const GetAreaUnion = async (poly_list) => {
-    if (poly_list.length === 0) {
-        throw new Error("Cannot compute union of empty polygon list");
-    } else if (poly_list.length === 1) {
-        return L.GeoJSON.geometryToLayer(poly_list[0]);
-    } else {
-        let turfpolys = [];
-        for (let p = 0; p < poly_list.length; p++) {
-            turfpoly = turf.polygon(poly_list[p].geometry.coordinates);
-            turfpolys.push(turfpoly);
-        }
-        union = turf.union(turf.featureCollection(turfpolys));
-        return L.GeoJSON.geometryToLayer(union);
-    }
+/**
+ * Convert a value to kilometers squared.
+ * @param {number} val The value to convert
+ * @param {number} [fix=2] The number of decimal places
+ * @returns The converted value
+ */
+const toKm2 = (val, fix = 2) => {
+    return (val / 1000000).toFixed(fix);
 }
 
+const findFurthest = (polygons, index = 0) => {
+    //All coordinates of the polygons
+    let coords;
+    //Longest recorded distance
+    let longest = 0;
+    //Coordinate of the furthest point
+    let coord_longest = [0,0]
+
+    //Get the coordinates
+    if (polygons.geometry.type === "MultiPolygon") {
+        // We've got a multipolygon, flatten the coordinates
+        coords = polygons.geometry.coordinates.flat(2);
+    }
+    else {
+        // We've got a single polygon, take the first (and only) coordinate list  
+        coords = polygons.geometry.coordinates[0];
+    }
+
+    //Compute distance to origin point for each coordinate, and keep the longest
+    for (c of coords) {
+        let dist = getDistance(c, originPointCoords[index]);
+        if (longest < dist) {
+            longest = dist;
+            coord_longest = c;
+        }
+    }
+    //We should have found the longest distance, place the pin, and populate legend
+    placePin(coord_longest, longest, index);
+    // setMaxDistanceInLegend(longest, index);    
+}
+
+const getDistance = (coordinate, origin) => {
+    //Swap the order of the origin to get lng,lat
+    let orig = [origin[1], origin[0]];
+    return turf.distance(coordinate, orig, { units: 'kilometers' });
+}
+
+
+/**
+ * 
+ * @param {Array} coord The coordinate to place the pin at, as [lng, lat] 
+ * @param {number} distance The distance from the origin, in km
+ * @param {number} index The index of the isochrone map (0 for first, 1 for second)
+ * @param {number} fix The number of decimal places to show in the marker popup
+ */
+const placePin = (coord, distance, index = 0, fix = 2) => {
+    console.log(coord);
+    let lat = coord[1]
+    let lng = coord[0];
+    let mkr = L.marker([lat, lng], { icon: index === 0 ? pin : pin2, zIndexOffset: 1600 })
+    mkr.addTo(map);
+    mkr.bindPopup('<p>Distance from origin : ' + distance.toFixed(fix) + ' km</p>');
+    furthestMarkers[index] = mkr;
+}
+
+/**
+ * Merges a list of polygons into a single polygon, or a multipolygon if it is disjoint.
+ * @param {Array} polys The list of polygons to merge.
+ * @returns A promise that resolves to a single polygon representing the union of the input polygons.
+ */
 async function mergePolys(polys) {
-    function work({data}) {
+    function work({ data }) {
         // console.log(data);
         // postMessage(data);
         importScripts('https://cdn.jsdelivr.net/npm/@turf/turf@7/turf.min.js');
@@ -288,61 +377,89 @@ async function mergePolys(polys) {
             let turfpolys = [];
             for (let p = 0; p < data.length; p++) {
                 turfpoly = turf.polygon(data[p].geometry.coordinates);
-                console.log("PUSHING THE POLYGOOOOOON")
                 turfpolys.push(turfpoly);
             }
             union = turf.union(turf.featureCollection(turfpolys));
             postMessage(union);
         }
     }
+
     let blob = new Blob(["onmessage =" + work.toString()], { type: 'application/javascript' });
     let worker = new Worker(URL.createObjectURL(blob));
+    workers.push(worker);
     worker.postMessage(polys);
 
-    return await new Promise(resolve => worker.onmessage = e => resolve(e.data));
-}
-
-
-const setAreasInLegend = (areas, index) => {
-    //Skip last one since it's always 0
-    for (i = 0; i < areas.length - 1; i++) {
-        // console.log(`area-value-${index + 1}-${i}`)
-        document.getElementById(`area-value-${index + 1}-${i}`).innerHTML = areas[i].toFixed(2);
-    }
-}
-
-const getPolyArea = (poly) => {
-    var area = 0;
-    for (island of poly.getLatLngs()) {
-        // If the polygon is non-contiguous, access the island
-        if (island.length < 2) {
-            island = island[0]
+    return await new Promise((resolve, reject) => {
+        workerAbortController.signal.addEventListener('abort', () => {
+            reject('Worker aborted');
+        });
+        worker.onmessage = e => {
+            resolve(e.data)
         }
-        // Sum the area within each "island"
-        area += L.GeometryUtil.geodesicArea(island);
     }
-    return area;
+    );
 }
 
+/**
+ * 
+ * @param {string} value The value to write in the legend
+ * @param {number} iso_index The isochrone index (0 for first, 1 for second)
+ * @param {number} time_limit_index The time limit index for the current valuess
+ */
+const setAreaInLegend = (value, iso_index, time_limit_index) => {
+    // Search for the element
+    let n = `area-value-${iso_index + 1}-${time_limit_index}`
+    let areaLabelElement = document.getElementById(n);
+    if (areaLabelElement === null) {
+        throw new Error("Area label not found: " + n);
+    }
+    // Write the value
+    areaLabelElement.innerHTML = value;
+}
+
+const setMaxDistanceInLegend = (value, iso_index, fix = 2) => {
+    // Search for the element
+    let n = `legend-max-distance-${iso_index + 1}`
+    let distanceLabelElement = document.getElementById(n);
+    if (distanceLabelElement === null) {
+        throw new Error("Distance label not found: " + n);
+    }
+    // Write the value
+    distanceLabelElement.innerHTML = value.toFixed(fix);
+}
+
+/**
+ * Create a legend entry
+ * @param {*} color The color to use
+ * @param {*} time_limit The time limit value
+ * @param {*} time_limit_index The index of the time limit value
+ * @param {*} isoIndex The index of the isochrone map (0 for first, 1 for second)
+ * @returns 
+ */
 const createLegend = (color, time_limit, time_limit_index, isoIndex = 0) => {
-    //Create a new legend entry element
+    // Create a new legend entry element
     const legendElement = document.createElement('div');
     legendElement.className = 'legend-entry';
-    //Set legend color
+    legendElement.id = `legend-entry-${isoIndex + 1}-${time_limit_index}`;
+    // Set legend color
     legendElement.style.backgroundColor = color;
-    //Create time limit label
+    // Create time limit label
     const timeLimitElement = document.createElement('p');
     timeLimitElement.className = 'timelimit';
     timeLimitElement.textContent = `${time_limit} min.`;
-    // const areaLabelElement = document.createElement('p');
-    // areaLabelElement.className = 'area';
-    // areaLabelElement.innerHTML = `<span id="area-value-${isoIndex + 1}-${time_limit_index}"></span> km²`;
+    // Create area label
+    const areaLabelElement = document.createElement('p');
+    areaLabelElement.className = 'area';
+    areaLabelElement.id = `area-value-${isoIndex + 1}-${time_limit_index}`;
+    // Append elements to legend entry
     legendElement.appendChild(timeLimitElement);
-    // legendElement.appendChild(areaLabelElement);
+    legendElement.appendChild(areaLabelElement);
     return legendElement;
 }
 
-// Updates the isochrone interval options and sets the default to the maximum number of isochrones possible.
+/**
+ * Updates the isochrone interval options and sets the default to the maximum number of isochrones possible.
+ */
 const updateIsochroneIntervalOptions = () => {
     isochroneIntervalInput.innerHTML = '';
 
@@ -357,6 +474,10 @@ const updateIsochroneIntervalOptions = () => {
     }
 };
 
+/**
+ * Retrieves the choosen display mode (circles or contour lines).
+* @returns The display mode (circles or contour lines)
+ */
 const getDisplayMode = () => {
     if (displayModeCirclesInput.checked) {
         return 'circles';
@@ -372,6 +493,10 @@ const getDisplayMode = () => {
 
 // Helper functions.
 
+/**
+ * Build a date string in the format YYYY-MM-DD HH:MM
+ * @returns {string} The current date and time in the format YYYY-MM-DD HH:MM
+ */
 const getCurrentDateTime = () => {
     const now = new Date();
     const year = now.getFullYear().toString().padStart(2, '0');
@@ -387,7 +512,7 @@ const getCurrentDateTime = () => {
  * Creates a marker on the map.
  * @param {number} lat - The latitude of the marker.
  * @param {number} lng - The longitude of the marker.
- * @param {number} index - Which marker to create. (0 or 1)
+ * @param {number} index - Which marker to create. (0 for first isochrone or 1 for second isochrone)
  */
 const createMarker = (lat, lng, index = 0) => {
     if (index < 0 || index > 1) {
@@ -404,7 +529,7 @@ const createMarker = (lat, lng, index = 0) => {
 
 /**
  * Removes a marker from the map.
- * @param {number} index - Which marker to remove. (0 or 1) 
+ * @param {number} index - Which marker to remove. (0 for first isochrone or 1 for second isochrone)
  * @returns 
  */
 const removeMarker = (index = 0) => {
@@ -418,6 +543,25 @@ const removeMarker = (index = 0) => {
     }
 };
 
+
+const removeFurthestMarker = (index = 0) => {
+    if (index < 0 || index > 1) {
+        //Abort
+        return;
+    }
+    if (furthestMarkers[index] !== null) {
+        furthestMarkers[index].remove();
+        furthestMarkers[index] = null;
+    }
+};
+
+/**
+ * Display the coordinates of the origin point of a specific isochrone.
+ * @param {number} index The isochrone index (0 for first, 1 for second)
+ * @param {number} lat The latitude of the origin point
+ * @param {number} lng The longitude of the origin point
+ * @returns 
+ */
 const setCoordValue = (index, lat, lng) => {
     if (index < 0 || index > 1) {
         //Abort
@@ -432,6 +576,10 @@ const setCoordValue = (index, lat, lng) => {
     }
 };
 
+/**
+ * Ends the marker placement mode.
+ * @param {number} markerIndex The index of the marker (0 for first, 1 for second) 
+ */
 const EndMarkerPlacement = function (markerIndex) {
     if (isTabletResolution()) {
         showForm();
@@ -445,6 +593,10 @@ const EndMarkerPlacement = function (markerIndex) {
     if (onMarkerPlacementEndCallback !== null) { onMarkerPlacementEndCallback(); }
 };
 
+/**
+ * Starts the marker placement mode.
+ * @param {number} markerIndex The index of the marker (0 for first, 1 for second) 
+ */
 const StartMarkerPlacement = (markerIndex) => {
 
     mapElem.classList.add(`cursor-marker-${markerIndex}`);
@@ -454,6 +606,10 @@ const StartMarkerPlacement = (markerIndex) => {
     isSelectingOriginPoint = true;
 };
 
+/**
+ * Returns true if the resolution is mobile, false otherwise.
+ * @returns {boolean} True if the resolution is mobile, false otherwise.
+ */
 const isMobileResolution = () => {
     if (screen.width < 768) {
         return true;
@@ -461,6 +617,10 @@ const isMobileResolution = () => {
     return false;
 }
 
+/**
+ * Returns true if the resolution is tablet, false otherwise.
+ * @returns {boolean} True if the resolution is tablet, false otherwise.
+ */
 const isTabletResolution = () => {
     if (screen.width < 960) {
         return true;
@@ -468,13 +628,20 @@ const isTabletResolution = () => {
     return false;
 }
 
-
-
+/**
+ * Move the map view to a given coordinate.
+ * @param {number} lat The latitude of the new center.
+ * @param {number} lng The longitude of the new center.
+ * @param {boolean} animate Should the move be animated.
+ */
 const MoveMapToPoint = (lat, lng, animate = true) => {
     isMapMoving = true;
     map.setView([lat, lng], undefined, { animate: animate });
 }
 
+/**
+ * Toggle the display of the form.
+ */
 const ToggleFormDisplay = () => {
     if (formContainerOuter.classList.contains("hide-form")) {
         showForm();
@@ -483,11 +650,18 @@ const ToggleFormDisplay = () => {
     }
 }
 
+/** 
+ * Reset the coordinates of a marker.
+ * @param {number} markerIndex The index of the marker to reset.
+ */
 const resetCoordinates = (markerIndex) => {
     originPointCoords[markerIndex] = [null, null];
     setCoordValue(markerIndex, originPointCoords[markerIndex][0], originPointCoords[markerIndex][1]);
 }
 
+/**
+ * Validate the marker placement when using aim mode.
+ */
 const ValidateAim = () => {
     if (isAiming) {
         //Disable aiming mode.
@@ -501,6 +675,9 @@ const ValidateAim = () => {
     }
 }
 
+/**
+ * Hide the form.
+ */
 const hideForm = () => {
     formContainerOuter.classList.add("hide-form");
     if (isAiming) {
@@ -508,11 +685,18 @@ const hideForm = () => {
     }
 }
 
+/** 
+ * Show the form.
+ */
 const showForm = () => {
     formContainerOuter.classList.remove("hide-form");
     formContainerOuter.classList.remove("aiming");
 }
 
+/** 
+ * Brings an isochrone map to front.
+ * @param {number} isoIndex The index of the isochrone map to bring to front (0 for largest, 1 for smallest).
+ */
 const bringToFront = (isoIndex) => {
     if (isoIndex < 0 || isoIndex > 1) {
         throw new Error("Invalid Index when trying to bring to front.");
@@ -551,6 +735,7 @@ timeLimitInput.addEventListener('change', () => {
 });
 
 // Handles the application's behavior when a point of origin is being selected.
+// 1st isochrone
 selectOriginPointElem1.addEventListener("click", () => {
     if (isAiming) {
         //Disable aiming mode.
@@ -571,6 +756,7 @@ selectOriginPointElem1.addEventListener("click", () => {
     }
 });
 
+// 2nd isochrone
 selectOriginPointElem2.addEventListener("click", () => {
     if (isAiming) {
         //Disable aiming mode.
@@ -592,9 +778,8 @@ selectOriginPointElem2.addEventListener("click", () => {
 });
 
 
-
-
-
+/** Triggered when the map is being dragged around 
+*/
 map.on('dragstart', (e) => {
     if (!isAiming) {
         return;
@@ -609,6 +794,9 @@ map.on('dragstart', (e) => {
     }
 });
 
+/**
+ * Triggered when the map is moved.
+ */
 map.on('move', (e) => {
     if (!isAiming) {
         return;
@@ -625,7 +813,6 @@ map.on('move', (e) => {
     mapElem.classList.remove('cursor-marker');
     selectOriginPointElem1.classList.remove("selecting-origin-point");
     selectOriginPointElem1.innerHTML = `<img src="./assets/images/origin-point.png" width="15"> Changer de point d'origine`;
-    // originPointCoordValueElems[index].innerHTML = `${originPointCoords[index][0].toFixed(8)} ${originPointCoords[index][1].toFixed(8)}`;
     setCoordValue(index, originPointCoords[index][0], originPointCoords[index][1]);
     isSelectingOriginPoint = false;
 })
@@ -738,7 +925,14 @@ formElem.addEventListener('submit', async (e) => {
         abortController = new AbortController();
         return;
     }
-
+    // if (isWorkersRunning) {
+    workerAbortController.abort();
+    for (let w of workers) {
+        w.terminate();
+    }
+    workers = [];
+    // }
+    isWorkersRunning = true;
     isFormSubmitted = true;
     submitButton.classList.add('btn-cancel-request');
     submitButton.innerHTML = `<img src="./assets/images/target.png" width="20" height="20"> Annuler`;
