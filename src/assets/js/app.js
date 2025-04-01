@@ -566,6 +566,9 @@ const removeFurthestMarker = (index = 0) => {
  * @returns
  */
 const setCoordValue = (index, lat, lng) => {
+    if (originPointCoords[index] === null || lat === null || lng === null) {
+        return;
+    }
     if (index < 0 || index > 1) {
         //Abort
         return;
@@ -918,6 +921,7 @@ closeOriginPoint2.addEventListener('click', () => {
     ctrlsPointTwoInner.classList.toggle('hidden');
     removeMarker(1);
     resetCoordinates(1);
+    originPointCoords[1] = null;
 });
 
 formElem.addEventListener('submit', async (e) => {
