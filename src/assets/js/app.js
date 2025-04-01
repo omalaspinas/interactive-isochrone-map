@@ -134,7 +134,7 @@ const init = () => {
 
 const setMinMaxDepartureAt = async () => {
     try {
-        const response = await fetch(HRDF_SERVER_URL + '/metadata');
+        const response = await fetch(HRDF_SERVER_URL + 'metadata');
         const metadata = await response.json();
 
         departureAtInput.min = metadata.start_date + " 00:00";
@@ -157,7 +157,7 @@ const displayIsochroneMap = async (idx, clear = true) => {
     let isochroneMap;
 
     try {
-        const response = await fetch(HRDF_SERVER_URL + '/isochrones?' + new URLSearchParams(getRequestParams(idx)).toString(), {
+        const response = await fetch(HRDF_SERVER_URL + 'isochrones?' + new URLSearchParams(getRequestParams(idx)).toString(), {
             signal: abortController.signal,
         });
         isochroneMap = await response.json();
