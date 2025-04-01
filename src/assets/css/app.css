@@ -340,9 +340,14 @@ input[type='radio'] {
 
 #ctrls-point-2-hidden {
     /* display: block; */
-    max-height: 32px;
+    max-height: 48px;
     overflow: hidden;
     transition: 0.2s ease-in-out;
+}
+
+#ctrls-point-2-hidden a {
+    max-height: 32px;
+    text-decoration: none;
 }
 
 #ctrls-point-2-inner {
