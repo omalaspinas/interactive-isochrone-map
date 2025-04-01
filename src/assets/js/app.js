@@ -1,14 +1,17 @@
 const mapElem = document.getElementById('map');
 
 // const HRDF_SERVER_URL = "http://10.136.217.209:8100"; //Local
-const HRDF_SERVER_URL = "http://100.64.0.218:8100"; //Local
+//const HRDF_SERVER_URL = "http://100.64.0.218:8100"; //Local
+//const HRDF_SERVER_URL = "https://isochrone-hepiapp.tail8a8c3b.ts.net:8100"
+const HRDF_SERVER_URL = "https://iso.hepiapp.ch/api/"; //Local
+// const HRDF_SERVER_URL = "http://0.0.0.0:8300"; //Local
 /** Pretty Palettes ! */
 const palette1 = [
     '#36AB68', // Nearest.
     '#91CF60', //
     '#D7FF67', //
-    '#FFD767', // 
-    '#FC8D59', // 
+    '#FFD767', //
+    '#FC8D59', //
     '#E2453C', // Furthest.
 ];
 const palette2 = [
@@ -103,7 +106,7 @@ const pin2 = L.icon({
     iconUrl: './assets/images/pin_red.svg',
     iconSize: [24, 24],
     iconAnchor: [12, 24],
-}); 
+});
 
 // Geneva coordinates:
 const centerLat = 46.204519704052466;
@@ -115,7 +118,7 @@ const map = L.map('map').setView([centerLat, centerLng], 11);
 
 const init = () => {
     setMinMaxDepartureAt();
-    // departureAtInput.value = getCurrentDateTime();
+     departureAtInput.value = getCurrentDateTime();
     // departureAtInput.value = departureAtInput.max;
     updateIsochroneIntervalOptions();
 
@@ -249,7 +252,7 @@ const displayIsochrones = async (isochroneMap, index = 0) => {
                 fillOpacity: 1.0,
                 pane: pane
             })
-            // Draw the polygon on the layer 
+            // Draw the polygon on the layer
             poly.addTo(isochronesLayer);
             // Add it to the polygon list
             iso_polygons.push(poly.toGeoJSON());
@@ -318,7 +321,7 @@ const findFurthest = (polygons, index = 0) => {
         coords = polygons.geometry.coordinates.flat(2);
     }
     else {
-        // We've got a single polygon, take the first (and only) coordinate list  
+        // We've got a single polygon, take the first (and only) coordinate list
         coords = polygons.geometry.coordinates[0];
     }
 
@@ -332,7 +335,7 @@ const findFurthest = (polygons, index = 0) => {
     }
     //We should have found the longest distance, place the pin, and populate legend
     placePin(coord_longest, longest, index);
-    // setMaxDistanceInLegend(longest, index);    
+    // setMaxDistanceInLegend(longest, index);
 }
 
 const getDistance = (coordinate, origin) => {
@@ -343,8 +346,8 @@ const getDistance = (coordinate, origin) => {
 
 
 /**
- * 
- * @param {Array} coord The coordinate to place the pin at, as [lng, lat] 
+ *
+ * @param {Array} coord The coordinate to place the pin at, as [lng, lat]
  * @param {number} distance The distance from the origin, in km
  * @param {number} index The index of the isochrone map (0 for first, 1 for second)
  * @param {number} fix The number of decimal places to show in the marker popup
@@ -401,7 +404,7 @@ async function mergePolys(polys) {
 }
 
 /**
- * 
+ *
  * @param {string} value The value to write in the legend
  * @param {number} iso_index The isochrone index (0 for first, 1 for second)
  * @param {number} time_limit_index The time limit index for the current valuess
@@ -434,7 +437,7 @@ const setMaxDistanceInLegend = (value, iso_index, fix = 2) => {
  * @param {*} time_limit The time limit value
  * @param {*} time_limit_index The index of the time limit value
  * @param {*} isoIndex The index of the isochrone map (0 for first, 1 for second)
- * @returns 
+ * @returns
  */
 const createLegend = (color, time_limit, time_limit_index, isoIndex = 0) => {
     // Create a new legend entry element
@@ -530,7 +533,7 @@ const createMarker = (lat, lng, index = 0) => {
 /**
  * Removes a marker from the map.
  * @param {number} index - Which marker to remove. (0 for first isochrone or 1 for second isochrone)
- * @returns 
+ * @returns
  */
 const removeMarker = (index = 0) => {
     if (index < 0 || index > 1) {
@@ -560,7 +563,7 @@ const removeFurthestMarker = (index = 0) => {
  * @param {number} index The isochrone index (0 for first, 1 for second)
  * @param {number} lat The latitude of the origin point
  * @param {number} lng The longitude of the origin point
- * @returns 
+ * @returns
  */
 const setCoordValue = (index, lat, lng) => {
     if (index < 0 || index > 1) {
@@ -578,7 +581,7 @@ const setCoordValue = (index, lat, lng) => {
 
 /**
  * Ends the marker placement mode.
- * @param {number} markerIndex The index of the marker (0 for first, 1 for second) 
+ * @param {number} markerIndex The index of the marker (0 for first, 1 for second)
  */
 const EndMarkerPlacement = function (markerIndex) {
     if (isTabletResolution()) {
@@ -595,7 +598,7 @@ const EndMarkerPlacement = function (markerIndex) {
 
 /**
  * Starts the marker placement mode.
- * @param {number} markerIndex The index of the marker (0 for first, 1 for second) 
+ * @param {number} markerIndex The index of the marker (0 for first, 1 for second)
  */
 const StartMarkerPlacement = (markerIndex) => {
 
@@ -650,7 +653,7 @@ const ToggleFormDisplay = () => {
     }
 }
 
-/** 
+/**
  * Reset the coordinates of a marker.
  * @param {number} markerIndex The index of the marker to reset.
  */
@@ -685,7 +688,7 @@ const hideForm = () => {
     }
 }
 
-/** 
+/**
  * Show the form.
  */
 const showForm = () => {
@@ -693,7 +696,7 @@ const showForm = () => {
     formContainerOuter.classList.remove("aiming");
 }
 
-/** 
+/**
  * Brings an isochrone map to front.
  * @param {number} isoIndex The index of the isochrone map to bring to front (0 for largest, 1 for smallest).
  */
@@ -778,7 +781,7 @@ selectOriginPointElem2.addEventListener("click", () => {
 });
 
 
-/** Triggered when the map is being dragged around 
+/** Triggered when the map is being dragged around
 */
 map.on('dragstart', (e) => {
     if (!isAiming) {
