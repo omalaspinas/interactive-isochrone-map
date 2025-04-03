@@ -1,10 +1,6 @@
 const mapElem = document.getElementById('map');
-
-// const HRDF_SERVER_URL = "http://10.136.217.209:8100"; //Local
-//const HRDF_SERVER_URL = "http://100.64.0.218:8100"; //Local
-//const HRDF_SERVER_URL = "https://isochrone-hepiapp.tail8a8c3b.ts.net:8100"
 const HRDF_SERVER_URL = "https://iso.hepiapp.ch/api/"; //Local
-// const HRDF_SERVER_URL = "http://0.0.0.0:8300"; //Local
+
 /** Pretty Palettes ! */
 const palette1 = [
     '#36AB68', // Nearest.
@@ -37,8 +33,7 @@ const originPointCoordValueMobileElem = document.getElementById('origin-point-co
 const departureAtInput = document.getElementById("departure-at");
 const timeLimitInput = document.getElementById("time-limit");
 const isochroneIntervalInput = document.getElementById("isochrone-interval");
-const displayModeCirclesInput = document.getElementById("display-mode-circles");
-const displayModeContourLineInput = document.getElementById("display-mode-contour-line");
+
 const btnAimMode1 = document.getElementById("lock-origin-point-1");
 const btnAimMode2 = document.getElementById("lock-origin-point-2");
 const btnValidateAim = document.getElementById("validate-aim");
@@ -479,19 +474,12 @@ const updateIsochroneIntervalOptions = () => {
 
 /**
  * Retrieves the choosen display mode (circles or contour lines).
-* @returns The display mode (circles or contour lines)
+ * Since we disabled circles mode, this will only return contour_line.
+ * If reenabling circles, put the logic to choose which mode here.
+* @returns The display mode (API suppports circles or contour_line, currently only contour_line is supported)
  */
 const getDisplayMode = () => {
-    if (displayModeCirclesInput.checked) {
-        return 'circles';
-    }
-
-    if (displayModeContourLineInput.checked) {
-        return 'contour_line';
-    }
-
-    // This exception should never be thrown.
-    throw new Error("Required");
+    return 'contour_line';
 };
 
 // Helper functions.
