@@ -353,7 +353,7 @@ const placePin = (coord, distance, index = 0, fix = 2) => {
     let lng = coord[0];
     let mkr = L.marker([lat, lng], { icon: index === 0 ? pin : pin2, zIndexOffset: 1600 })
     mkr.addTo(map);
-    mkr.bindPopup('<p>Distance from origin : ' + distance.toFixed(fix) + ' km</p>');
+    mkr.bindPopup('<p>Distance depuis l\'origine : ' + distance.toFixed(fix) + ' km</p>');
     furthestMarkers[index] = mkr;
 }
 
