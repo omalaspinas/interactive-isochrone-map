@@ -919,6 +919,7 @@ ctrlsPointTwoHidden.addEventListener('click', () => {
 closeOriginPoint2.addEventListener('click', () => {
     ctrlsPointTwoHidden.classList.toggle('hidden');
     ctrlsPointTwoInner.classList.toggle('hidden');
+    originPointCoordValueElems[1].innerHTML = '-';
     removeMarker(1);
     resetCoordinates(1);
     originPointCoords[1] = null;
