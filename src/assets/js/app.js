@@ -1,5 +1,5 @@
 const mapElem = document.getElementById('map');
-const HRDF_SERVER_URL = "https://iso.hepiapp.ch/api/"; //Local
+const HRDF_SERVER_URL = "https://iso.hepiapp.ch/api/";
 
 /** Pretty Palettes ! */
 const palette1 = [
@@ -29,6 +29,8 @@ const formElem = document.getElementById('form');
 const selectOriginPointElem1 = document.getElementById("select-origin-point-1");
 const selectOriginPointElem2 = document.getElementById("select-origin-point-2");
 
+const toggleMaxDistanceCbx = document.getElementById("legend-show-max-distance");
+
 const originPointCoordValueMobileElem = document.getElementById('origin-point-coord-value-mobile');
 const departureAtInput = document.getElementById("departure-at");
 const timeLimitInput = document.getElementById("time-limit");
@@ -54,6 +56,7 @@ let isSelectingOriginPoint_markerIndex = 0;
 
 let markers = [null, null];
 let furthestMarkers = [null, null];
+let furthestMarkersLayerGroup = null;
 let workers = [];
 
 let selectOriginPointElems = [selectOriginPointElem1, selectOriginPointElem2];
@@ -125,6 +128,10 @@ const init = () => {
     map.getPane('isochrones0').style.opacity = 0.6;
     map.createPane('isochrones1');
     map.getPane('isochrones1').style.opacity = 0.6;
+
+
+    furthestMarkersLayerGroup = L.layerGroup();
+
 };
 
 const setMinMaxDepartureAt = async () => {
@@ -348,11 +355,10 @@ const getDistance = (coordinate, origin) => {
  * @param {number} fix The number of decimal places to show in the marker popup
  */
 const placePin = (coord, distance, index = 0, fix = 2) => {
-    console.log(coord);
     let lat = coord[1]
     let lng = coord[0];
-    let mkr = L.marker([lat, lng], { icon: index === 0 ? pin : pin2, zIndexOffset: 1600 })
-    mkr.addTo(map);
+    let mkr = L.marker([lat, lng], { icon: index === 0 ? pin : pin2, zIndexOffset: 1600, opacity: 1})
+    furthestMarkersLayerGroup.addLayer(mkr);
     mkr.bindPopup('<p>Distance depuis l\'origine : ' + distance.toFixed(fix) + ' km</p>');
     furthestMarkers[index] = mkr;
 }
@@ -364,8 +370,7 @@ const placePin = (coord, distance, index = 0, fix = 2) => {
  */
 async function mergePolys(polys) {
     function work({ data }) {
-        // console.log(data);
-        // postMessage(data);
+
         importScripts('https://cdn.jsdelivr.net/npm/@turf/turf@7/turf.min.js');
         if (data.length === 0) {
             throw new Error("Cannot compute union of empty polygon list");
@@ -514,7 +519,6 @@ const createMarker = (lat, lng, index = 0) => {
     if (index === 1) {
         marker = customMarker2;
     }
-    console.log(marker);
     return L.marker([lat, lng], { icon: marker, zIndexOffset: 1600 }).addTo(map);
 };
 
@@ -541,6 +545,7 @@ const removeFurthestMarker = (index = 0) => {
         return;
     }
     if (furthestMarkers[index] !== null) {
+        furthestMarkersLayerGroup.removeLayer(furthestMarkers[index]);
         furthestMarkers[index].remove();
         furthestMarkers[index] = null;
     }
@@ -818,7 +823,6 @@ map.on('moveend', (e) => {
 });
 
 map.on('click', (e) => {
-    console.log(e);
     if (!isSelectingOriginPoint) {
         return;
     }
@@ -938,8 +942,6 @@ formElem.addEventListener('submit', async (e) => {
         await displayIsochroneMap(1, false);
     }
 
-    // console.log("here");
-
     isFormSubmitted = false;
     submitButton.classList.remove('btn-cancel-request');
     submitButton.innerHTML = `<img src="./assets/images/target.png" width="20" height="20"> Calculer`;
@@ -947,7 +949,6 @@ formElem.addEventListener('submit', async (e) => {
 
 legendControls_opacitySliders.forEach(ctrl => {
     ctrl.addEventListener('input', () => {
-        console.log(ctrl.value);
         map.getPane("isochrones" + ctrl.dataset.isoindex).style.opacity = ctrl.value / 100;
     });
 });
@@ -960,5 +961,13 @@ legend2.addEventListener('click', (e) => {
     bringToFront(1)
 });
 
+
+toggleMaxDistanceCbx.addEventListener('change', (e) => {
+    if (e.target.checked) {
+        furthestMarkersLayerGroup.addTo(map);
+    } else {
+        map.removeLayer(furthestMarkersLayerGroup);
+    }
+})
 
 init();

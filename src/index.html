@@ -190,13 +190,14 @@
         </div>
 
         <div class="legend-container hidden" id="legend-container">
-            <div class="column">
-                <div class="legend" id="legend">
-                    <!-- <div class="legend-entry" style="background-color: green;">30 min.</div> -->
-                    <!-- <div class="legend-entry" style="background-color: red;">30 min.</div> -->
-                </div>
-                <div class="legend-controls hidden" id="legend-controls-1">
-                    <input
+            <div class="column-wrapper">
+                <div class="column">
+                    <div class="legend" id="legend">
+                        <!-- <div class="legend-entry" style="background-color: green;">30 min.</div> -->
+                        <!-- <div class="legend-entry" style="background-color: red;">30 min.</div> -->
+                    </div>
+                    <div class="legend-controls hidden" id="legend-controls-1">
+                        <input
                         type="range"
                         min="0"
                         max="100"
@@ -204,17 +205,17 @@
                         class="slider"
                         id="opacity-slider-1"
                         data-isoindex="0"
-                    />
-                    <!-- Max : <span id="legend-max-distance-1">-</span> km -->
+                        />
+                        <!-- Max : <span id="legend-max-distance-1">-</span> km -->
+                    </div>
                 </div>
-            </div>
-            <div class="column">
-                <div class="legend" id="legend-2">
-                    <!-- <div class="legend-entry" style="background-color: green;">30 min.</div> -->
-                    <!-- <div class="legend-entry" style="background-color: red;">30 min.</div> -->
-                </div>
-                <div class="legend-controls hidden" id="legend-controls-2">
-                    <input
+                <div class="column">
+                    <div class="legend" id="legend-2">
+                        <!-- <div class="legend-entry" style="background-color: green;">30 min.</div> -->
+                        <!-- <div class="legend-entry" style="background-color: red;">30 min.</div> -->
+                    </div>
+                    <div class="legend-controls hidden" id="legend-controls-2">
+                        <input
                         type="range"
                         min="0"
                         max="100"
@@ -222,9 +223,14 @@
                         class="slider"
                         id="opacity-slider-2"
                         data-isoindex="1"
-                    />
-                    <!-- Max : <span id="legend-max-distance-2">-</span> km -->
+                        />
+                        <!-- Max : <span id="legend-max-distance-2">-</span> km -->
+                    </div>
                 </div>
+            </div>
+            <div class="form-checkbox">
+                <input type="checkbox" id="legend-show-max-distance">
+                <label for="legend-show-max-distance">Afficher la distance maximale</label>
             </div>
         </div>
 
