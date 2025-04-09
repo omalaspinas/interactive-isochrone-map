@@ -1,14 +1,14 @@
-const mapElem = document.getElementById('map');
+const mapElem = document.getElementById("map");
 const HRDF_SERVER_URL = "https://iso.hepiapp.ch/api/";
 
 /** Pretty Palettes ! */
 const palette1 = [
-    '#36AB68', // Nearest.
-    '#91CF60', //
-    '#D7FF67', //
-    '#FFD767', //
-    '#FC8D59', //
-    '#E2453C', // Furthest.
+    "#36AB68", // Nearest.
+    "#91CF60", //
+    "#D7FF67", //
+    "#FFD767", //
+    "#FC8D59", //
+    "#E2453C", // Furthest.
 ];
 const palette2 = [
     "#00ffef",
@@ -16,7 +16,7 @@ const palette2 = [
     "#3982d1",
     "#6b62b7",
     "#a24eaa",
-    "#cd2f88"
+    "#cd2f88",
 ];
 
 const legendContainer = document.getElementById("legend-container");
@@ -25,13 +25,17 @@ const legend2 = document.getElementById("legend-2");
 // Form.
 const formContainerOuter = document.getElementById("form-container-outer");
 const toggleFormDisplay = document.getElementById("toggle-form-display");
-const formElem = document.getElementById('form');
+const formElem = document.getElementById("form");
 const selectOriginPointElem1 = document.getElementById("select-origin-point-1");
 const selectOriginPointElem2 = document.getElementById("select-origin-point-2");
 
-const toggleMaxDistanceCbx = document.getElementById("legend-show-max-distance");
+const toggleMaxDistanceCbx = document.getElementById(
+    "legend-show-max-distance",
+);
 
-const originPointCoordValueMobileElem = document.getElementById('origin-point-coord-value-mobile');
+const originPointCoordValueMobileElem = document.getElementById(
+    "origin-point-coord-value-mobile",
+);
 const departureAtInput = document.getElementById("departure-at");
 const timeLimitInput = document.getElementById("time-limit");
 const isochroneIntervalInput = document.getElementById("isochrone-interval");
@@ -39,7 +43,7 @@ const isochroneIntervalInput = document.getElementById("isochrone-interval");
 const btnAimMode1 = document.getElementById("lock-origin-point-1");
 const btnAimMode2 = document.getElementById("lock-origin-point-2");
 const btnValidateAim = document.getElementById("validate-aim");
-const submitButton = document.getElementById('submit-button');
+const submitButton = document.getElementById("submit-button");
 
 /* Second point controls */
 
@@ -50,7 +54,10 @@ const closeOriginPoint2 = document.getElementById("close-origin-point-2");
 let isAiming = false;
 // let originPointOffset = [0, 0];
 // let originPointOffset2 = [0, 0];
-let originPointOffsets = [[0, 0], [0, 0]];
+let originPointOffsets = [
+    [0, 0],
+    [0, 0],
+];
 let isSelectingOriginPoint = false;
 let isSelectingOriginPoint_markerIndex = 0;
 
@@ -60,9 +67,16 @@ let furthestMarkersLayerGroup = null;
 let workers = [];
 
 let selectOriginPointElems = [selectOriginPointElem1, selectOriginPointElem2];
-let originPointCoordValueElem1 = document.getElementById('origin-point-coord-value-1');
-let originPointCoordValueElem2 = document.getElementById('origin-point-coord-value-2');
-let originPointCoordValueElems = [originPointCoordValueElem1, originPointCoordValueElem2];
+let originPointCoordValueElem1 = document.getElementById(
+    "origin-point-coord-value-1",
+);
+let originPointCoordValueElem2 = document.getElementById(
+    "origin-point-coord-value-2",
+);
+let originPointCoordValueElems = [
+    originPointCoordValueElem1,
+    originPointCoordValueElem2,
+];
 
 let originPointMarker = null;
 let isochronesLayer = null;
@@ -73,70 +87,108 @@ let isFormSubmitted = false;
 let isWorkersRunning = false;
 let abortController = new AbortController();
 let workerAbortController = new AbortController();
-let legendControls_opacitySliders = document.querySelectorAll('.legend-controls input[type="range"]');
+let legendControls_opacitySliders = document.querySelectorAll(
+    '.legend-controls input[type="range"]',
+);
 
 let isMapMoving = false;
 
 let onMarkerPlacementEndCallback = null;
 
-
-const spinner = `<div class="lds-dual-ring"></div>`
+const spinner = `<div class="lds-dual-ring"></div>`;
 
 const customMarker = L.icon({
-    iconUrl: './assets/images/marker.png',
+    iconUrl: "./assets/images/marker.png",
     iconSize: [32, 38],
     iconAnchor: [16, 38],
 });
 
 const customMarker2 = L.icon({
-    iconUrl: './assets/images/marker_red.png',
+    iconUrl: "./assets/images/marker_red.png",
     iconSize: [32, 38],
     iconAnchor: [16, 38],
 });
 
 const pin = L.icon({
-    iconUrl: './assets/images/pin.svg',
+    iconUrl: "./assets/images/pin.svg",
     iconSize: [24, 24],
     iconAnchor: [12, 24],
 });
 
 const pin2 = L.icon({
-    iconUrl: './assets/images/pin_red.svg',
+    iconUrl: "./assets/images/pin_red.svg",
     iconSize: [24, 24],
     iconAnchor: [12, 24],
 });
 
-// Geneva coordinates:
-const centerLat = 46.204519704052466;
-const centerLng = 6.138575100420967;
+// Different openstreetmap tiles
+var OpenStreetMap_Mapnik = L.tileLayer(
+    "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+    {
+        maxZoom: 19,
+        attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    },
+);
+var Stadia_AlidadeSmooth = L.tileLayer(
+    "https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.{ext}",
+    {
+        attribution:
+            '&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        ext: "png",
+    },
+);
+var Stadia_StamenTonerLite = L.tileLayer(
+    "https://tiles.stadiamaps.com/tiles/stamen_toner_lite/{z}/{x}/{y}{r}.{ext}",
+    {
+        attribution:
+            '&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://www.stamen.com/" target="_blank">Stamen Design</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        ext: "png",
+    },
+);
+var Esri_WorldGrayCanvas = L.tileLayer(
+    "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+    {
+        attribution: "Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ",
+        maxZoom: 16,
+    },
+);
+var CartoDB_Positron = L.tileLayer(
+    "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+    {
+        attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: "abcd",
+        maxZoom: 20,
+    },
+);
 
-const map = L.map('map').setView([centerLat, centerLng], 11);
+// Hepia coordinates:
+const centerLat = 46.20956654;
+const centerLng = 6.13536;
+
+const map = L.map("map").setView([centerLat, centerLng], 11);
 
 // Functions.
-
 const init = () => {
     setMinMaxDepartureAt();
-     departureAtInput.value = getCurrentDateTime();
+    departureAtInput.value = getCurrentDateTime();
     // departureAtInput.value = departureAtInput.max;
     updateIsochroneIntervalOptions();
 
-    var baseMap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    });
+    var baseMap = CartoDB_Positron;
     baseMap.addTo(map);
-    map.createPane('isochrones0');
-    map.getPane('isochrones0').style.opacity = 0.6;
-    map.createPane('isochrones1');
-    map.getPane('isochrones1').style.opacity = 0.6;
-
+    map.createPane("isochrones0");
+    map.getPane("isochrones0").style.opacity = 0.6;
+    map.createPane("isochrones1");
+    map.getPane("isochrones1").style.opacity = 0.6;
 
     furthestMarkersLayerGroup = L.layerGroup();
-
 };
 
 const setMinMaxDepartureAt = async () => {
     try {
-        const response = await fetch(HRDF_SERVER_URL + 'metadata');
+        const response = await fetch(HRDF_SERVER_URL + "metadata");
         const metadata = await response.json();
 
         departureAtInput.min = metadata.start_date + " 00:00";
@@ -159,12 +211,17 @@ const displayIsochroneMap = async (idx, clear = true) => {
     let isochroneMap;
 
     try {
-        const response = await fetch(HRDF_SERVER_URL + 'isochrones?' + new URLSearchParams(getRequestParams(idx)).toString(), {
-            signal: abortController.signal,
-        });
+        const response = await fetch(
+            HRDF_SERVER_URL +
+                "isochrones?" +
+                new URLSearchParams(getRequestParams(idx)).toString(),
+            {
+                signal: abortController.signal,
+            },
+        );
         isochroneMap = await response.json();
     } catch (err) {
-        if (err.name === 'AbortError') {
+        if (err.name === "AbortError") {
             return;
         }
 
@@ -173,7 +230,9 @@ const displayIsochroneMap = async (idx, clear = true) => {
     }
 
     if (isochroneMap.isochrones.length === 0) {
-        alert("La carte isochrone n'a pas pu être calculée, car aucun arrêt n'est atteignable dans le temps imparti.");
+        alert(
+            "La carte isochrone n'a pas pu être calculée, car aucun arrêt n'est atteignable dans le temps imparti.",
+        );
         return;
     }
 
@@ -182,18 +241,20 @@ const displayIsochroneMap = async (idx, clear = true) => {
     // map.setView([originPointCoord[0], originPointCoord[1]], undefined, { animate: false });
 
     displayIsochrones(isochroneMap, idx);
-    legendContainer.classList.remove('hidden');
+    legendContainer.classList.remove("hidden");
 
     isochronesLayer.addTo(map);
 };
 
 const clearPreviousIsochroneMap = () => {
-    legend.innerHTML = '';
-    legend2.innerHTML = '';
-    document.querySelectorAll('.legend-controls').forEach(elem => elem.classList.add('hidden'));
+    legend.innerHTML = "";
+    legend2.innerHTML = "";
+    document
+        .querySelectorAll(".legend-controls")
+        .forEach((elem) => elem.classList.add("hidden"));
     // Remove the furthest point markers if they're present
-    removeFurthestMarker(0)
-    removeFurthestMarker(1)
+    removeFurthestMarker(0);
+    removeFurthestMarker(1);
     if (isochronesLayer !== null) {
         isochronesLayer.remove();
     }
@@ -201,11 +262,10 @@ const clearPreviousIsochroneMap = () => {
 };
 
 const getRequestParams = (idx = 0) => {
-    const departureDate = departureAtInput.value.split('T')[0];
-    const departureTime = departureAtInput.value.split('T')[1];
+    const departureDate = departureAtInput.value.split("T")[0];
+    const departureTime = departureAtInput.value.split("T")[1];
     const timeLimit = timeLimitInput.value;
     const isochroneInterval = isochroneIntervalInput.value;
-    const displayMode = getDisplayMode();
 
     const params = {
         origin_point_latitude: originPointCoords[idx][0],
@@ -214,15 +274,13 @@ const getRequestParams = (idx = 0) => {
         departure_time: departureTime,
         time_limit: timeLimit,
         isochrone_interval: isochroneInterval,
-        display_mode: displayMode,
+        display_mode: "circles",
     };
 
     return params;
 };
 
-
 const displayIsochrones = async (isochroneMap, index = 0) => {
-
     let legend_div = index === 0 ? legend : legend2;
     let pane = index === 0 ? "isochrones0" : "isochrones1";
     let palette = index === 0 ? palette1 : palette2;
@@ -234,12 +292,14 @@ const displayIsochrones = async (isochroneMap, index = 0) => {
         [0, 3, 4, 5],
         [0, 1, 3, 4, 5],
         [0, 1, 2, 3, 4, 5],
-    ][isochroneMap.isochrones.length - 1].map(index => palette[index]).reverse();
+    ][isochroneMap.isochrones.length - 1]
+        .map((index) => palette[index])
+        .reverse();
 
-    let all_polygons = []
+    let all_polygons = [];
     // Displays isochrones by layer from largest to smallest.
     for (const [i, isochrone] of isochroneMap.isochrones.reverse().entries()) {
-        let iso_polygons = []
+        let iso_polygons = [];
         const color = colors[i];
         for (const polygon of isochrone.polygons) {
             let latlngs = [];
@@ -248,27 +308,28 @@ const displayIsochrones = async (isochroneMap, index = 0) => {
             }
             // Build the polygon
             let poly = L.polygon(latlngs, {
-                color: getDisplayMode() === 'contour_line' ? 'black' : 'transparent',
+                color: "black",
                 weight: 1.0,
                 fillColor: color,
                 fillOpacity: 1.0,
-                pane: pane
-            })
+                pane: pane,
+            });
             // Draw the polygon on the layer
             poly.addTo(isochronesLayer);
             // Add it to the polygon list
             iso_polygons.push(poly.toGeoJSON());
         }
         // Append the legend entry
-        legend_div.appendChild(createLegend(color, isochrone.time_limit, i, index));
+        legend_div.appendChild(
+            createLegend(color, isochrone.time_limit, i, index),
+        );
         // Add the sublist to the list of all polygons
         all_polygons.push(iso_polygons);
     }
 
     // Show the opacity slider for the current isochrone map
     let slider = document.querySelector(`#legend-controls-${index + 1}`);
-    slider.classList.remove('hidden');
-
+    slider.classList.remove("hidden");
 
     // Merge the polygons
     let aborted = false;
@@ -279,7 +340,9 @@ const displayIsochrones = async (isochroneMap, index = 0) => {
             setAreaInLegend("ABORTED", index, i);
             continue;
         }
-        console.log(`Merging the polygons for isochrone ${i + 1}, time limit ${i}. Merging ${all_polygons[i].length} polygons`);
+        console.log(
+            `Merging the polygons for isochrone ${i + 1}, time limit ${i}. Merging ${all_polygons[i].length} polygons`,
+        );
         // Show a spinner while the worker is running
         setAreaInLegend(spinner, index, i);
         try {
@@ -296,7 +359,6 @@ const displayIsochrones = async (isochroneMap, index = 0) => {
             findFurthest(fused, index);
         }
     }
-
 };
 
 /**
@@ -307,7 +369,7 @@ const displayIsochrones = async (isochroneMap, index = 0) => {
  */
 const toKm2 = (val, fix = 2) => {
     return (val / 1000000).toFixed(fix);
-}
+};
 
 const findFurthest = (polygons, index = 0) => {
     //All coordinates of the polygons
@@ -315,14 +377,13 @@ const findFurthest = (polygons, index = 0) => {
     //Longest recorded distance
     let longest = 0;
     //Coordinate of the furthest point
-    let coord_longest = [0,0]
+    let coord_longest = [0, 0];
 
     //Get the coordinates
     if (polygons.geometry.type === "MultiPolygon") {
         // We've got a multipolygon, flatten the coordinates
         coords = polygons.geometry.coordinates.flat(2);
-    }
-    else {
+    } else {
         // We've got a single polygon, take the first (and only) coordinate list
         coords = polygons.geometry.coordinates[0];
     }
@@ -338,14 +399,13 @@ const findFurthest = (polygons, index = 0) => {
     //We should have found the longest distance, place the pin, and populate legend
     placePin(coord_longest, longest, index);
     // setMaxDistanceInLegend(longest, index);
-}
+};
 
 const getDistance = (coordinate, origin) => {
     //Swap the order of the origin to get lng,lat
     let orig = [origin[1], origin[0]];
-    return turf.distance(coordinate, orig, { units: 'kilometers' });
-}
-
+    return turf.distance(coordinate, orig, { units: "kilometers" });
+};
 
 /**
  *
@@ -355,13 +415,19 @@ const getDistance = (coordinate, origin) => {
  * @param {number} fix The number of decimal places to show in the marker popup
  */
 const placePin = (coord, distance, index = 0, fix = 2) => {
-    let lat = coord[1]
+    let lat = coord[1];
     let lng = coord[0];
-    let mkr = L.marker([lat, lng], { icon: index === 0 ? pin : pin2, zIndexOffset: 1600, opacity: 1})
+    let mkr = L.marker([lat, lng], {
+        icon: index === 0 ? pin : pin2,
+        zIndexOffset: 1600,
+        opacity: 1,
+    });
     furthestMarkersLayerGroup.addLayer(mkr);
-    mkr.bindPopup('<p>Distance depuis l\'origine : ' + distance.toFixed(fix) + ' km</p>');
+    mkr.bindPopup(
+        "<p>Distance depuis l'origine : " + distance.toFixed(fix) + " km</p>",
+    );
     furthestMarkers[index] = mkr;
-}
+};
 
 /**
  * Merges a list of polygons into a single polygon, or a multipolygon if it is disjoint.
@@ -370,8 +436,7 @@ const placePin = (coord, distance, index = 0, fix = 2) => {
  */
 async function mergePolys(polys) {
     function work({ data }) {
-
-        importScripts('https://cdn.jsdelivr.net/npm/@turf/turf@7/turf.min.js');
+        importScripts("https://cdn.jsdelivr.net/npm/@turf/turf@7/turf.min.js");
         if (data.length === 0) {
             throw new Error("Cannot compute union of empty polygon list");
         } else if (data.length === 1) {
@@ -387,20 +452,21 @@ async function mergePolys(polys) {
         }
     }
 
-    let blob = new Blob(["onmessage =" + work.toString()], { type: 'application/javascript' });
+    let blob = new Blob(["onmessage =" + work.toString()], {
+        type: "application/javascript",
+    });
     let worker = new Worker(URL.createObjectURL(blob));
     workers.push(worker);
     worker.postMessage(polys);
 
     return await new Promise((resolve, reject) => {
-        workerAbortController.signal.addEventListener('abort', () => {
-            reject('Worker aborted');
+        workerAbortController.signal.addEventListener("abort", () => {
+            reject("Worker aborted");
         });
-        worker.onmessage = e => {
-            resolve(e.data)
-        }
-    }
-    );
+        worker.onmessage = (e) => {
+            resolve(e.data);
+        };
+    });
 }
 
 /**
@@ -411,25 +477,25 @@ async function mergePolys(polys) {
  */
 const setAreaInLegend = (value, iso_index, time_limit_index) => {
     // Search for the element
-    let n = `area-value-${iso_index + 1}-${time_limit_index}`
+    let n = `area-value-${iso_index + 1}-${time_limit_index}`;
     let areaLabelElement = document.getElementById(n);
     if (areaLabelElement === null) {
         throw new Error("Area label not found: " + n);
     }
     // Write the value
     areaLabelElement.innerHTML = value;
-}
+};
 
 const setMaxDistanceInLegend = (value, iso_index, fix = 2) => {
     // Search for the element
-    let n = `legend-max-distance-${iso_index + 1}`
+    let n = `legend-max-distance-${iso_index + 1}`;
     let distanceLabelElement = document.getElementById(n);
     if (distanceLabelElement === null) {
         throw new Error("Distance label not found: " + n);
     }
     // Write the value
     distanceLabelElement.innerHTML = value.toFixed(fix);
-}
+};
 
 /**
  * Create a legend entry
@@ -441,50 +507,40 @@ const setMaxDistanceInLegend = (value, iso_index, fix = 2) => {
  */
 const createLegend = (color, time_limit, time_limit_index, isoIndex = 0) => {
     // Create a new legend entry element
-    const legendElement = document.createElement('div');
-    legendElement.className = 'legend-entry';
+    const legendElement = document.createElement("div");
+    legendElement.className = "legend-entry";
     legendElement.id = `legend-entry-${isoIndex + 1}-${time_limit_index}`;
     // Set legend color
     legendElement.style.backgroundColor = color;
     // Create time limit label
-    const timeLimitElement = document.createElement('p');
-    timeLimitElement.className = 'timelimit';
+    const timeLimitElement = document.createElement("p");
+    timeLimitElement.className = "timelimit";
     timeLimitElement.textContent = `${time_limit} min.`;
     // Create area label
-    const areaLabelElement = document.createElement('p');
-    areaLabelElement.className = 'area';
+    const areaLabelElement = document.createElement("p");
+    areaLabelElement.className = "area";
     areaLabelElement.id = `area-value-${isoIndex + 1}-${time_limit_index}`;
     // Append elements to legend entry
     legendElement.appendChild(timeLimitElement);
     legendElement.appendChild(areaLabelElement);
     return legendElement;
-}
+};
 
 /**
  * Updates the isochrone interval options and sets the default to the maximum number of isochrones possible.
  */
 const updateIsochroneIntervalOptions = () => {
-    isochroneIntervalInput.innerHTML = '';
+    isochroneIntervalInput.innerHTML = "";
 
     for (let i = 0; i < 6; i++) {
         if (timeLimitInput.value % (i + 1) == 0) {
             const value = timeLimitInput.value / (i + 1);
             isochroneIntervalInput.innerHTML += `
-                <option value="${value}">${value} minutes, ${i + 1} isochrone${i + 1 > 1 ? 's' : ''}</option>
+                <option value="${value}">${value} minutes, ${i + 1} isochrone${i + 1 > 1 ? "s" : ""}</option>
             `;
             isochroneIntervalInput.value = value;
         }
     }
-};
-
-/**
- * Retrieves the choosen display mode (circles or contour lines).
- * Since we disabled circles mode, this will only return contour_line.
- * If reenabling circles, put the logic to choose which mode here.
-* @returns The display mode (API suppports circles or contour_line, currently only contour_line is supported)
- */
-const getDisplayMode = () => {
-    return 'contour_line';
 };
 
 // Helper functions.
@@ -495,11 +551,11 @@ const getDisplayMode = () => {
  */
 const getCurrentDateTime = () => {
     const now = new Date();
-    const year = now.getFullYear().toString().padStart(2, '0');
-    const month = (now.getMonth() + 1).toString().padStart(2, '0');
-    const day = now.getDate().toString().padStart(2, '0');
-    const hour = now.getHours().toString().padStart(2, '0');
-    const minute = now.getMinutes().toString().padStart(2, '0');
+    const year = now.getFullYear().toString().padStart(2, "0");
+    const month = (now.getMonth() + 1).toString().padStart(2, "0");
+    const day = now.getDate().toString().padStart(2, "0");
+    const hour = now.getHours().toString().padStart(2, "0");
+    const minute = now.getMinutes().toString().padStart(2, "0");
 
     return year + "-" + month + "-" + day + " " + hour + ":" + minute;
 };
@@ -519,7 +575,9 @@ const createMarker = (lat, lng, index = 0) => {
     if (index === 1) {
         marker = customMarker2;
     }
-    return L.marker([lat, lng], { icon: marker, zIndexOffset: 1600 }).addTo(map);
+    return L.marker([lat, lng], { icon: marker, zIndexOffset: 1600 }).addTo(
+        map,
+    );
 };
 
 /**
@@ -537,7 +595,6 @@ const removeMarker = (index = 0) => {
         markers[index] = null;
     }
 };
-
 
 const removeFurthestMarker = (index = 0) => {
     if (index < 0 || index > 1) {
@@ -567,9 +624,10 @@ const setCoordValue = (index, lat, lng) => {
         return;
     }
     if (lat === null || lng === null) {
-        originPointCoordValueElems[index].innerHTML = '-';
+        originPointCoordValueElems[index].innerHTML = "-";
     }
-    originPointCoordValueElems[index].innerHTML = `${lat.toFixed(8)} ${lng.toFixed(8)}`;
+    originPointCoordValueElems[index].innerHTML =
+        `${lat.toFixed(8)} ${lng.toFixed(8)}`;
     if (originPointCoordValueMobileElem !== null) {
         originPointCoordValueMobileElem.innerHTML = `${lat.toFixed(8)} ${lng.toFixed(8)}`;
     }
@@ -584,12 +642,21 @@ const EndMarkerPlacement = function (markerIndex) {
         showForm();
     }
     mapElem.classList.remove(`cursor-marker-${markerIndex}`);
-    selectOriginPointElems[markerIndex].classList.remove("selecting-origin-point");
-    selectOriginPointElems[markerIndex].innerHTML = `<img src="./assets/images/origin-point.png" width="15"> Changer de point d'origine`;
+    selectOriginPointElems[markerIndex].classList.remove(
+        "selecting-origin-point",
+    );
+    selectOriginPointElems[markerIndex].innerHTML =
+        `<img src="./assets/images/origin-point.png" width="15"> Changer de point d'origine`;
     // originPointCoordValueElems[markerIndex].innerHTML = `${originPointCoords[markerIndex][0].toFixed(8)} ${originPointCoords[markerIndex][1].toFixed(8)}`;
-    setCoordValue(markerIndex, originPointCoords[markerIndex][0], originPointCoords[markerIndex][1]);
+    setCoordValue(
+        markerIndex,
+        originPointCoords[markerIndex][0],
+        originPointCoords[markerIndex][1],
+    );
     isSelectingOriginPoint = false;
-    if (onMarkerPlacementEndCallback !== null) { onMarkerPlacementEndCallback(); }
+    if (onMarkerPlacementEndCallback !== null) {
+        onMarkerPlacementEndCallback();
+    }
 };
 
 /**
@@ -597,7 +664,6 @@ const EndMarkerPlacement = function (markerIndex) {
  * @param {number} markerIndex The index of the marker (0 for first, 1 for second)
  */
 const StartMarkerPlacement = (markerIndex) => {
-
     mapElem.classList.add(`cursor-marker-${markerIndex}`);
     selectOriginPointElems[markerIndex].classList.add("selecting-origin-point");
     selectOriginPointElems[markerIndex].innerHTML = `Annuler`;
@@ -614,7 +680,7 @@ const isMobileResolution = () => {
         return true;
     }
     return false;
-}
+};
 
 /**
  * Returns true if the resolution is tablet, false otherwise.
@@ -625,7 +691,7 @@ const isTabletResolution = () => {
         return true;
     }
     return false;
-}
+};
 
 /**
  * Move the map view to a given coordinate.
@@ -636,7 +702,7 @@ const isTabletResolution = () => {
 const MoveMapToPoint = (lat, lng, animate = true) => {
     isMapMoving = true;
     map.setView([lat, lng], undefined, { animate: animate });
-}
+};
 
 /**
  * Toggle the display of the form.
@@ -647,7 +713,7 @@ const ToggleFormDisplay = () => {
     } else {
         hideForm();
     }
-}
+};
 
 /**
  * Reset the coordinates of a marker.
@@ -655,8 +721,12 @@ const ToggleFormDisplay = () => {
  */
 const resetCoordinates = (markerIndex) => {
     originPointCoords[markerIndex] = [null, null];
-    setCoordValue(markerIndex, originPointCoords[markerIndex][0], originPointCoords[markerIndex][1]);
-}
+    setCoordValue(
+        markerIndex,
+        originPointCoords[markerIndex][0],
+        originPointCoords[markerIndex][1],
+    );
+};
 
 /**
  * Validate the marker placement when using aim mode.
@@ -665,14 +735,14 @@ const ValidateAim = () => {
     if (isAiming) {
         //Disable aiming mode.
         isAiming = false;
-        btnAimMode1.classList.remove('active');
-        btnAimMode2.classList.remove('active');
+        btnAimMode1.classList.remove("active");
+        btnAimMode2.classList.remove("active");
         // isAiming = false;
         if (isTabletResolution()) {
             showForm();
         }
     }
-}
+};
 
 /**
  * Hide the form.
@@ -682,7 +752,7 @@ const hideForm = () => {
     if (isAiming) {
         formContainerOuter.classList.add("aiming");
     }
-}
+};
 
 /**
  * Show the form.
@@ -690,7 +760,7 @@ const hideForm = () => {
 const showForm = () => {
     formContainerOuter.classList.remove("hide-form");
     formContainerOuter.classList.remove("aiming");
-}
+};
 
 /**
  * Brings an isochrone map to front.
@@ -708,11 +778,12 @@ const bringToFront = (isoIndex) => {
         map.getPane("isochrones0").style.zIndex = 700;
         map.getPane("isochrones1").style.zIndex = 1000;
     }
-    let markerPane = document.getElementsByClassName("leaflet-pane leaflet-marker-pane")[0];
+    let markerPane = document.getElementsByClassName(
+        "leaflet-pane leaflet-marker-pane",
+    )[0];
     if (markerPane !== undefined || markerPane !== null) {
         markerPane.style.zIndex = 2000;
     }
-
 };
 
 // Event listeners.
@@ -723,7 +794,7 @@ toggleFormDisplay.addEventListener("click", () => {
 });
 
 // Ensures that min and max values cannot be bypassed.
-timeLimitInput.addEventListener('change', () => {
+timeLimitInput.addEventListener("change", () => {
     if (timeLimitInput.value < 10) {
         timeLimitInput.value = 10;
     } else if (timeLimitInput.value > 480) {
@@ -739,8 +810,8 @@ selectOriginPointElem1.addEventListener("click", () => {
     if (isAiming) {
         //Disable aiming mode.
         isAiming = false;
-        btnAimMode1.classList.remove('active');
-        btnAimMode2.classList.remove('active');
+        btnAimMode1.classList.remove("active");
+        btnAimMode2.classList.remove("active");
     }
     if (selectOriginPointElem1.classList.contains("selecting-origin-point")) {
         EndMarkerPlacement(0);
@@ -760,8 +831,8 @@ selectOriginPointElem2.addEventListener("click", () => {
     if (isAiming) {
         //Disable aiming mode.
         isAiming = false;
-        btnAimMode1.classList.remove('active');
-        btnAimMode2.classList.remove('active');
+        btnAimMode1.classList.remove("active");
+        btnAimMode2.classList.remove("active");
     }
     if (selectOriginPointElem2.classList.contains("selecting-origin-point")) {
         EndMarkerPlacement(1);
@@ -776,17 +847,18 @@ selectOriginPointElem2.addEventListener("click", () => {
     }
 });
 
-
 /** Triggered when the map is being dragged around
-*/
-map.on('dragstart', (e) => {
+ */
+map.on("dragstart", (e) => {
     if (!isAiming) {
         return;
     }
     let index = isSelectingOriginPoint_markerIndex;
     if (markers[index] !== null) {
-        originPointOffsets[index][0] = markers[index].getLatLng().lat - map.getCenter().lat;
-        originPointOffsets[index][1] = markers[index].getLatLng().lng - map.getCenter().lng;
+        originPointOffsets[index][0] =
+            markers[index].getLatLng().lat - map.getCenter().lat;
+        originPointOffsets[index][1] =
+            markers[index].getLatLng().lng - map.getCenter().lng;
     } else {
         originPointOffsets[index][0] = 0;
         originPointOffsets[index][1] = 0;
@@ -796,33 +868,46 @@ map.on('dragstart', (e) => {
 /**
  * Triggered when the map is moved.
  */
-map.on('move', (e) => {
+map.on("move", (e) => {
     if (!isAiming) {
         return;
     }
-    if (isMapMoving) { return; }
+    if (isMapMoving) {
+        return;
+    }
     let index = isSelectingOriginPoint_markerIndex;
     //Remove current marker
     removeMarker(index);
 
     //Compute offset of marker from map center
-    originPointCoords[index] = [map.getCenter().lat + originPointOffsets[index][0], map.getCenter().lng + originPointOffsets[index][1]]
-    markers[index] = createMarker(originPointCoords[index][0], originPointCoords[index][1], index);
+    originPointCoords[index] = [
+        map.getCenter().lat + originPointOffsets[index][0],
+        map.getCenter().lng + originPointOffsets[index][1],
+    ];
+    markers[index] = createMarker(
+        originPointCoords[index][0],
+        originPointCoords[index][1],
+        index,
+    );
 
-    mapElem.classList.remove('cursor-marker');
+    mapElem.classList.remove("cursor-marker");
     selectOriginPointElem1.classList.remove("selecting-origin-point");
     selectOriginPointElem1.innerHTML = `<img src="./assets/images/origin-point.png" width="15"> Changer de point d'origine`;
-    setCoordValue(index, originPointCoords[index][0], originPointCoords[index][1]);
+    setCoordValue(
+        index,
+        originPointCoords[index][0],
+        originPointCoords[index][1],
+    );
     isSelectingOriginPoint = false;
-})
+});
 
-map.on('moveend', (e) => {
+map.on("moveend", (e) => {
     if (isMapMoving) {
         isMapMoving = false;
     }
 });
 
-map.on('click', (e) => {
+map.on("click", (e) => {
     if (!isSelectingOriginPoint) {
         return;
     }
@@ -833,33 +918,40 @@ map.on('click', (e) => {
     removeMarker(index);
 
     // Retrieve position of click
-    originPointCoords[index] = [e.latlng.lat, e.latlng.lng]
+    originPointCoords[index] = [e.latlng.lat, e.latlng.lng];
     //Create new marker at position
-    markers[index] = createMarker(originPointCoords[index][0], originPointCoords[index][1], index);
+    markers[index] = createMarker(
+        originPointCoords[index][0],
+        originPointCoords[index][1],
+        index,
+    );
     //Clean up
     EndMarkerPlacement(index);
-
 });
 
-btnAimMode1.addEventListener('click', () => {
+btnAimMode1.addEventListener("click", () => {
     //Disable aim mode of other marker if enabled
-    btnAimMode2.classList.remove('active');
+    btnAimMode2.classList.remove("active");
 
     if (isAiming && isSelectingOriginPoint_markerIndex === 0) {
-        btnAimMode1.classList.remove('active');
+        btnAimMode1.classList.remove("active");
         isAiming = false;
         if (isTabletResolution()) {
             showForm();
         }
     } else {
         //Enable aim mode
-        btnAimMode1.classList.add('active');
+        btnAimMode1.classList.add("active");
         isAiming = true;
         isSelectingOriginPoint_markerIndex = 0;
         if (markers[0] === null) {
             //Marker isn't on map, place it at the current center.
-            originPointCoords[0] = [map.getCenter().lat, map.getCenter().lng]
-            markers[0] = createMarker(originPointCoords[0][0], originPointCoords[0][1], 0);
+            originPointCoords[0] = [map.getCenter().lat, map.getCenter().lng];
+            markers[0] = createMarker(
+                originPointCoords[0][0],
+                originPointCoords[0][1],
+                0,
+            );
         }
         MoveMapToPoint(originPointCoords[0][0], originPointCoords[0][1], true);
         EndMarkerPlacement(0);
@@ -869,26 +961,29 @@ btnAimMode1.addEventListener('click', () => {
     }
 });
 
-
-btnAimMode2.addEventListener('click', () => {
+btnAimMode2.addEventListener("click", () => {
     //Disable aim mode of other marker if enabled
-    btnAimMode1.classList.remove('active');
+    btnAimMode1.classList.remove("active");
     if (isAiming && isSelectingOriginPoint_markerIndex === 1) {
         //Disable aim mode
-        btnAimMode2.classList.remove('active');
+        btnAimMode2.classList.remove("active");
         isAiming = false;
         if (isTabletResolution()) {
             showForm();
         }
     } else {
         //Enable aim mode
-        btnAimMode2.classList.add('active');
+        btnAimMode2.classList.add("active");
         isAiming = true;
         isSelectingOriginPoint_markerIndex = 1;
         if (markers[1] === null) {
             //Marker isn't on map, place it at the current center.
-            originPointCoords[1] = [map.getCenter().lat, map.getCenter().lng]
-            markers[1] = createMarker(originPointCoords[1][0], originPointCoords[1][1], 1);
+            originPointCoords[1] = [map.getCenter().lat, map.getCenter().lng];
+            markers[1] = createMarker(
+                originPointCoords[1][0],
+                originPointCoords[1][1],
+                1,
+            );
         }
         MoveMapToPoint(originPointCoords[1][0], originPointCoords[1][1], true);
         EndMarkerPlacement(1);
@@ -898,26 +993,25 @@ btnAimMode2.addEventListener('click', () => {
     }
 });
 
-btnValidateAim.addEventListener('click', () => {
+btnValidateAim.addEventListener("click", () => {
     ValidateAim();
 });
 
-
-ctrlsPointTwoHidden.addEventListener('click', () => {
-    ctrlsPointTwoHidden.classList.toggle('hidden');
-    ctrlsPointTwoInner.classList.toggle('hidden');
+ctrlsPointTwoHidden.addEventListener("click", () => {
+    ctrlsPointTwoHidden.classList.toggle("hidden");
+    ctrlsPointTwoInner.classList.toggle("hidden");
 });
 
-closeOriginPoint2.addEventListener('click', () => {
-    ctrlsPointTwoHidden.classList.toggle('hidden');
-    ctrlsPointTwoInner.classList.toggle('hidden');
-    originPointCoordValueElems[1].innerHTML = '-';
+closeOriginPoint2.addEventListener("click", () => {
+    ctrlsPointTwoHidden.classList.toggle("hidden");
+    ctrlsPointTwoInner.classList.toggle("hidden");
+    originPointCoordValueElems[1].innerHTML = "-";
     removeMarker(1);
     resetCoordinates(1);
     originPointCoords[1] = null;
 });
 
-formElem.addEventListener('submit', async (e) => {
+formElem.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     if (isFormSubmitted) {
@@ -934,7 +1028,7 @@ formElem.addEventListener('submit', async (e) => {
     // }
     isWorkersRunning = true;
     isFormSubmitted = true;
-    submitButton.classList.add('btn-cancel-request');
+    submitButton.classList.add("btn-cancel-request");
     submitButton.innerHTML = `<img src="./assets/images/target.png" width="20" height="20"> Annuler`;
 
     await displayIsochroneMap(0);
@@ -943,31 +1037,31 @@ formElem.addEventListener('submit', async (e) => {
     }
 
     isFormSubmitted = false;
-    submitButton.classList.remove('btn-cancel-request');
+    submitButton.classList.remove("btn-cancel-request");
     submitButton.innerHTML = `<img src="./assets/images/target.png" width="20" height="20"> Calculer`;
 });
 
-legendControls_opacitySliders.forEach(ctrl => {
-    ctrl.addEventListener('input', () => {
-        map.getPane("isochrones" + ctrl.dataset.isoindex).style.opacity = ctrl.value / 100;
+legendControls_opacitySliders.forEach((ctrl) => {
+    ctrl.addEventListener("input", () => {
+        map.getPane("isochrones" + ctrl.dataset.isoindex).style.opacity =
+            ctrl.value / 100;
     });
 });
 
-legend.addEventListener('click', (e) => {
-    bringToFront(0)
+legend.addEventListener("click", (e) => {
+    bringToFront(0);
 });
 
-legend2.addEventListener('click', (e) => {
-    bringToFront(1)
+legend2.addEventListener("click", (e) => {
+    bringToFront(1);
 });
 
-
-toggleMaxDistanceCbx.addEventListener('change', (e) => {
+toggleMaxDistanceCbx.addEventListener("change", (e) => {
     if (e.target.checked) {
         furthestMarkersLayerGroup.addTo(map);
     } else {
         map.removeLayer(furthestMarkersLayerGroup);
     }
-})
+});
 
 init();
