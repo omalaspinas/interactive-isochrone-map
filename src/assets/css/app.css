@@ -2,6 +2,11 @@
 
 /* "Default" */
 
+:root {
+    --mobile-width: 768px;
+    --offset-hide-form-mobile: 0px;
+}
+
 * {
     box-sizing: border-box;
     font-family: "Montserrat", sans-serif;
@@ -19,13 +24,17 @@ label {
     display: block;
 }
 
-input:not([type=radio]),
+input:not([type=radio]):not([type=checkbox]),
 select {
     border: 2px solid #C8C8C8;
     border-radius: 8px;
     padding: 0px 8px;
     height: 40px;
     width: 100%;
+}
+
+input[type=range].slider {
+    height: 24px;
 }
 
 input[type='radio'] {
@@ -88,6 +97,13 @@ input[type='radio'] {
     opacity: 1.0;
 }
 
+.btn-secondary.active {
+    background-color: #E2453C;
+    /* border-color: #E2453C; */
+    color: white;
+    opacity: 1.0;
+}
+
 /* Animation */
 
 @keyframes spin {
@@ -103,8 +119,15 @@ input[type='radio'] {
     height: 100vh;
 }
 
-.cursor-marker {
+/* .cursor-marker {
     cursor: url(./../images/marker.png) 16 38, auto !important;
+} */
+.cursor-marker-0 {
+    cursor: url(./../images/marker.png) 16 38, auto !important;
+}
+
+.cursor-marker-1 {
+    cursor: url(./../images/marker_red.png) 16 38, auto !important;
 }
 
 .leaflet-interactive {
@@ -119,13 +142,49 @@ input[type='radio'] {
     border-radius: 16px;
     bottom: 32px;
     box-shadow: 0px 4px 10px 0px rgba(0, 0, 0, 0.17);
-    display: flex;
-    flex-direction: column;
+    /* display: flex; */
+    /* flex-direction: row; */
     padding: 8px;
     right: 32px;
     position: fixed;
     z-index: 1000;
+    width: min-content;
 }
+
+.legend-container.hidden {
+    display: none;
+}
+
+.column-wrapper {
+    display: flex;
+    flex-direction: row;
+}
+
+.column-wrapper .column {
+    display: flex;
+    flex-direction: column;
+    max-width: 100px;
+}
+
+.form-checkbox {
+   display: flex;
+   flex-direction: row;
+    /* flex-direction: row;
+    align-items: center;
+    position: relative;
+  width: 50%; */
+}
+
+.form-checkbox label {
+    display: inline;
+    margin: 0;
+    overflow-x: hidden;
+}
+
+#legend-show-max-distance~label {
+    text-align: center;
+}
+    
 
 .legend {
     border: 0;
@@ -136,9 +195,14 @@ input[type='radio'] {
 .legend-entry {
     color: black;
     height: 40px;
-    line-height: 40px;
+    /* line-height: 20px; */
     text-align: center;
     width: 96px;
+    margin-left: 2px;
+    margin-right: 2px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .legend-entry:first-of-type {
@@ -151,7 +215,51 @@ input[type='radio'] {
     border-bottom-right-radius: 8px;
 }
 
+.legend-entry p {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.legend-entry .timelimit {
+    /* line-height: 24px; */
+    /* line-height: 36px; */
+    flex-grow: 2;
+    font-size: 1em;
+}
+
+.legend-entry .area {
+    flex-grow: 1;
+    font-size: 0.8em;
+}
+
+.legend-entry .area span {
+    font-size: 12px;
+} 
+
+.legend-controls {
+    align-items: center;
+    display: flex;
+    width: calc(96px - 2px);
+    display: block;
+}
+
+.legend-controls .slider {
+    height: 24px;
+}
+
+
+.legend-controls.hidden {
+    display: none;
+}
+
 /* Form */
+
+#form {
+    /* max-height: 80vh; */
+    /* overflow-y: scroll; */
+}
 
 .form-container-outer {
     bottom: 32px;
@@ -159,6 +267,7 @@ input[type='radio'] {
     position: fixed;
     transition: 0.5s ease-in-out;
     z-index: 1000;
+
 }
 
 .form-container {
@@ -166,9 +275,12 @@ input[type='radio'] {
     border: 2px solid #C8C8C8;
     border-radius: 16px;
     box-shadow: 0px 4px 10px 0px rgba(0, 0, 0, 0.17);
-    overflow: visible;
     padding: 16px;
-    width: 340px;
+    max-width: 340px;
+
+    /* Cap form to 80% of the viewport height, scroll if necessary */
+    max-height: 80vh;
+    overflow: scroll;
 }
 
 .toggle-form-display {
@@ -255,4 +367,160 @@ input[type='radio'] {
 
 .btn-cancel-request img {
     animation: spin 1s linear infinite;
+}
+
+
+/* Form controls point 2 */
+
+#ctrls-point-2-hidden {
+    /* display: block; */
+    max-height: 48px;
+    overflow: hidden;
+    transition: 0.2s ease-in-out;
+}
+
+#ctrls-point-2-hidden a {
+    max-height: 32px;
+    text-decoration: none;
+}
+
+#ctrls-point-2-inner {
+    /* display: none; */
+    max-height: 0px;
+    overflow: hidden;
+    transition: 0.2s ease-in-out;
+}
+
+#ctrls-point-2-hidden.hidden {
+    max-height: 0px;
+    /* display: none; */
+    transition: 0.2s ease-in-out;
+}
+
+#ctrls-point-2-inner.hidden {
+    /* display: block; */
+    max-height: 100px;
+    overflow: hidden;
+    transition: 0.2s ease-in-out;
+}
+
+.closable-label {
+    display: flex;
+    justify-content: space-between;
+}
+
+.clickable-label {
+    cursor: pointer;
+    font-weight: 600;
+    color: #201f1f80;
+    text-decoration: none;
+}
+
+.clickable-label:hover {
+    color: #201F1F;
+    text-decoration: none;
+}
+
+/* Mobile */
+.coord-mobile {
+    display: none;
+}
+
+@media only screen and (max-width: 900px) {
+
+    * {
+        font-size: 0.8rem;
+    }
+
+    :not(.hide-form) .toggle-form-display {
+        /* position: fixed; */
+        top: -56px;
+        right: 0px;
+        transition: 0.5s ease-in-out;
+    }
+
+    .hide-form .toggle-form-display {
+        top: 0px;
+        right: -56px;
+        transition: 0.5s ease-in-out;
+    }
+
+    .coord-mobile {
+        display: block;
+        position: fixed;
+        width: calc(100% - 64px);
+
+    }
+
+    .aiming.hide-form>.coord-mobile {
+        bottom: 32px;
+        /* offset form */
+        left: 32px;
+        transition: 0.5s ease-in-out;
+    }
+
+    .coord-mobile {
+        bottom: -128px;
+        left: 32px;
+        transition: 0.5s ease-in-out;
+    }
+
+    /* Legends */
+
+    .legend-entry {
+        /* height: 16px; */
+        /* line-height: 16px; */
+        width: 48px;
+    }
+
+    .legend-controls {
+        width: 48px;
+    }
+
+}
+
+@media only screen and (orientation:landscape) and (max-width: 900px) {
+    :not(.hide-form) .toggle-form-display {
+        /* position: fixed; */
+        top: 56px;
+        right: -56px;
+        transition: 0.5s ease-in-out;
+    }
+}
+
+
+
+
+/* That awesome spinner ! */
+
+
+.lds-dual-ring,
+.lds-dual-ring:after {
+  box-sizing: border-box;
+}
+.lds-dual-ring {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin: auto;
+  color: #20202080;
+}
+.lds-dual-ring:after {
+  content: " ";
+  display: block;
+  width: 16px;
+  height: 16px;
+  color: #20202080;
+  border-radius: 50%;
+  border: 6.4px solid currentColor;
+  border-color: currentColor transparent currentColor transparent;
+  animation: lds-dual-ring 1.2s linear infinite;
+}
+@keyframes lds-dual-ring {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }

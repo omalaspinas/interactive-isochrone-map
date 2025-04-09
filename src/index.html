@@ -1,86 +1,251 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>
+            Carte isochrone interactive des transports publics suisses
+        </title>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Carte isochrone interactive des transports publics suisses</title>
+        <!-- Favicon -->
+        <link rel="icon" type="image/ico" href="./assets/images/favicon.ico" />
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/ico" href="./assets/images/favicon.ico">
+        <link
+            rel="stylesheet"
+            type="text/css"
+            href="https://unpkg.com/leaflet/dist/leaflet.css"
+        />
+        <link rel="stylesheet" type="text/css" href="./assets/css/app.css" />
+    </head>
 
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
-    <link rel="stylesheet" href="./assets/css/app.css">
-</head>
+    <body class="marker-cursor">
+        <div id="map"></div>
 
-<body class="marker-cursor">
-    <div id="map"></div>
+        <div class="form-container-outer" id="form-container-outer">
+            <div class="form-container">
+                <h2>Calculer une carte isochrone</h2>
 
-    <div class="form-container-outer" id="form-container-outer">
-        <div class="form-container">
-            <h2>Calculer une carte isochrone</h2>
+                <form id="form">
+                    <div id="ctrls-point-1" class="form-group">
+                        <label>Point d'origine n°1</label>
+                        <div
+                            style="
+                                display: flex;
+                                justify-content: space-between;
+                            "
+                        >
+                            <button
+                                class="btn btn-secondary"
+                                id="select-origin-point-1"
+                                type="button"
+                                style="width: 80%"
+                            >
+                                <img
+                                    src="./assets/images/origin-point.png"
+                                    width="15"
+                                />
+                                Choisir le point d'origine
+                            </button>
+                            <button
+                                class="btn btn-secondary"
+                                id="lock-origin-point-1"
+                                type="button"
+                                style="width: 18%"
+                            >
+                                <img
+                                    src="./assets/images/crosshair.png"
+                                    width="15"
+                                />
+                            </button>
+                        </div>
+                        <p class="origin-point-coord">
+                            Coordonnées :
+                            <span id="origin-point-coord-value-1">-</span>
+                        </p>
+                    </div>
+                    <div id="ctrls-point-2" class="form-group">
+                        <div id="ctrls-point-2-hidden">
+                            <a
+                                href="#"
+                                id="add-origin-point-2"
+                                class="btn"
+                                >+ Ajouter un point d'origine</a
+                            >
+                        </div>
+                        <div id="ctrls-point-2-inner">
+                            <div class="closable-label">
+                                <label>Point d'origine n°2</label>
+                                <a
+                                    href="#"
+                                    id="close-origin-point-2"
+                                    class="clickable-label"
+                                    >X</a
+                                >
+                            </div>
+                            <div
+                                style="
+                                    display: flex;
+                                    justify-content: space-between;
+                                "
+                            >
+                                <button
+                                    class="btn btn-secondary"
+                                    id="select-origin-point-2"
+                                    type="button"
+                                    style="width: 80%"
+                                >
+                                    <img
+                                        src="./assets/images/origin-point.png"
+                                        width="15"
+                                    />
+                                    Choisir le point d'origine
+                                </button>
+                                <button
+                                    class="btn btn-secondary"
+                                    id="lock-origin-point-2"
+                                    type="button"
+                                    style="width: 18%"
+                                >
+                                    <img
+                                        src="./assets/images/crosshair.png"
+                                        width="15"
+                                    />
+                                </button>
+                            </div>
+                            <p class="origin-point-coord">
+                                Coordonnées :
+                                <span id="origin-point-coord-value-2">-</span>
+                            </p>
+                        </div>
+                    </div>
 
-            <form id="form">
-                <div class="form-group">
-                    <label>Point d'origine</label>
-                    <button class="btn btn-secondary" id="select-origin-point" type="button">
-                        <img src="./assets/images/origin-point.png" width="15"> Choisir le point d'origine
-                    </button>
-                    <p class="origin-point-coord">Coordonnées : <span id="origin-point-coord-value">-</span></p>
-                </div>
+                    <div class="form-group">
+                        <label for="departure-at"
+                            >Date et heure de départ</label
+                        >
+                        <input
+                            type="datetime-local"
+                            id="departure-at"
+                            required
+                        />
+                    </div>
 
-                <div class="form-group">
-                    <label for="departure-at">Date et heure de départ</label>
-                    <input type="datetime-local" id="departure-at" required>
-                </div>
+                    <div class="form-group">
+                        <label for="time-limit"
+                            >Limite de temps (en minutes)</label
+                        >
+                        <input
+                            type="number"
+                            id="time-limit"
+                            min="10"
+                            max="480"
+                            value="60"
+                            required
+                        />
+                    </div>
 
-                <div class="form-group">
-                    <label for="time-limit">Limite de temps (en minutes)</label>
-                    <input type="number" id="time-limit" min="10" max="480" value="60" required>
-                </div>
+                    <div class="form-group">
+                        <label for="isochrone-interval"
+                            >Intervalle entre les isochrones</label
+                        >
+                        <select id="isochrone-interval" required></select>
+                    </div>
 
-                <div class="form-group">
-                    <label for="isochrone-interval">Intervalle entre les isochrones</label>
-                    <select id="isochrone-interval" required></select>
-                </div>
+                    <div class="mt-6">
+                        <button class="btn" id="submit-button" type="submit">
+                            <img
+                                src="./assets/images/target.png"
+                                width="20"
+                                height="20"
+                            />
+                            Calculer
+                        </button>
+                    </div>
+                </form>
+            </div>
 
-                <div class="form-group">
-                    <label>Mode d'affichage</label>
+            <button class="toggle-form-display" id="toggle-form-display">
+                <img src="./assets/images/double-caret.svg" />
+            </button>
 
-                    <div class="display-mode-container">
-                        <label>
-                            <input type="radio" id="display-mode-circles" name="display_mode" required checked> Cercles
-                        </label>
-                        <label>
-                            <input type="radio" id="display-mode-contour-line" name="display_mode" required> Ligne de contour
-                        </label>
+            <div class="form-container coord-mobile">
+                <p class="origin-point-coord">
+                    Coordonnées :
+                    <span id="origin-point-coord-value-mobile">-</span>
+                </p>
+                <button
+                    class="btn btn-secondary btn-validate-aim"
+                    id="validate-aim"
+                    type="button"
+                    style="width: 100%"
+                >
+                    <img
+                        src="./assets/images/check-mark.png"
+                        width="20"
+                        height="20"
+                    />
+                    Valider
+                </button>
+            </div>
+        </div>
+
+        <div class="legend-container hidden" id="legend-container">
+            <div class="column-wrapper">
+                <div class="column">
+                    <div class="legend" id="legend">
+                        <!-- <div class="legend-entry" style="background-color: green;">30 min.</div> -->
+                        <!-- <div class="legend-entry" style="background-color: red;">30 min.</div> -->
+                    </div>
+                    <div class="legend-controls hidden" id="legend-controls-1">
+                        <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value="60"
+                        class="slider"
+                        id="opacity-slider-1"
+                        data-isoindex="0"
+                        />
+                        <!-- Max : <span id="legend-max-distance-1">-</span> km -->
                     </div>
                 </div>
-
-                <div class="mt-6">
-                    <button class="btn" id="submit-button" type="submit">
-                        <img src="./assets/images/target.png" width="20" height="20"> Calculer
-                    </button>
+                <div class="column">
+                    <div class="legend" id="legend-2">
+                        <!-- <div class="legend-entry" style="background-color: green;">30 min.</div> -->
+                        <!-- <div class="legend-entry" style="background-color: red;">30 min.</div> -->
+                    </div>
+                    <div class="legend-controls hidden" id="legend-controls-2">
+                        <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value="60"
+                        class="slider"
+                        id="opacity-slider-2"
+                        data-isoindex="1"
+                        />
+                        <!-- Max : <span id="legend-max-distance-2">-</span> km -->
+                    </div>
                 </div>
-            </form>
+            </div>
+            <div class="form-checkbox">
+                <input type="checkbox" id="legend-show-max-distance">
+                <label for="legend-show-max-distance">Afficher la distance maximale</label>
+            </div>
         </div>
 
-        <button class="toggle-form-display" id="toggle-form-display">
-            <img src="./assets/images/double-caret.svg">
-        </button>
-    </div>
-
-    <div class="legend-container" id="legend-container" style="display: none;">
-        <div class="legend" id="legend">
-            <!--
-            <div class="legend-entry" style="background-color: green;">30 min.</div>
-            <div class="legend-entry" style="background-color: red;">30 min.</div>
-            -->
-        </div>
-    </div>
-
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script src="./assets/js/app.js"></script>
-</body>
-
+        <script
+            type="text/javascript"
+            src="https://unpkg.com/leaflet/dist/leaflet.js"
+        ></script>
+        <script
+            type="text/javascript"
+            src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"
+        ></script>
+        <script
+            type="text/javascript"
+            src="https://cdn.jsdelivr.net/npm/@turf/turf@7/turf.min.js"
+        ></script>
+        <script type="text/javascript" src="./assets/js/app.js"></script>
+    </body>
 </html>
