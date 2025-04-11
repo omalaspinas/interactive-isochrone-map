@@ -275,6 +275,7 @@ const getRequestParams = (idx = 0) => {
         time_limit: timeLimit,
         isochrone_interval: isochroneInterval,
         display_mode: "circles",
+        //Find optimal param
     };
 
     return params;
@@ -784,6 +785,16 @@ const bringToFront = (isoIndex) => {
     if (markerPane !== undefined || markerPane !== null) {
         markerPane.style.zIndex = 2000;
     }
+};
+
+// About modal
+
+const openAboutModal = () => {
+    document.getElementById("about-modal").classList.remove("hidden");
+};
+
+const closeAboutModal = () => {
+    document.getElementById("about-modal").classList.add("hidden");
 };
 
 // Event listeners.
