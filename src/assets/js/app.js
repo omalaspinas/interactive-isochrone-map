@@ -1,5 +1,6 @@
 const mapElem = document.getElementById("map");
-const HRDF_SERVER_URL = "https://iso.hepiapp.ch/api/";
+// const HRDF_SERVER_URL = "https://iso.hepiapp.ch/api/";
+const HRDF_SERVER_URL = "http://localhost:8100/";
 
 /** Pretty Palettes ! */
 const palette1 = [
@@ -43,6 +44,7 @@ const isochroneIntervalInput = document.getElementById("isochrone-interval");
 const btnAimMode1 = document.getElementById("lock-origin-point-1");
 const btnAimMode2 = document.getElementById("lock-origin-point-2");
 const btnValidateAim = document.getElementById("validate-aim");
+const findOptimalInput = document.getElementById("find-optimal");
 const submitButton = document.getElementById("submit-button");
 
 /* Second point controls */
@@ -120,6 +122,17 @@ const pin2 = L.icon({
     iconSize: [24, 24],
     iconAnchor: [12, 24],
 });
+
+/** Callbacks */
+
+let onStartComputeIsochrone = () => {
+    console.log("onStartComputeIsochrone trig");
+    findOptimalInput.disabled = true;
+};
+let onFinishComputeIsochrone = () => {
+    console.log("onFinishComputeIsochrone trig");
+    findOptimalInput.disabled = false;
+};
 
 // Different openstreetmap tiles
 var OpenStreetMap_Mapnik = L.tileLayer(
@@ -266,7 +279,7 @@ const getRequestParams = (idx = 0) => {
     const departureTime = departureAtInput.value.split("T")[1];
     const timeLimit = timeLimitInput.value;
     const isochroneInterval = isochroneIntervalInput.value;
-
+    const findOptimal = findOptimalInput.checked;
     const params = {
         origin_point_latitude: originPointCoords[idx][0],
         origin_point_longitude: originPointCoords[idx][1],
@@ -276,6 +289,7 @@ const getRequestParams = (idx = 0) => {
         isochrone_interval: isochroneInterval,
         display_mode: "circles",
         //Find optimal param
+        find_optimal: findOptimal,
     };
 
     return params;
@@ -1024,7 +1038,7 @@ closeOriginPoint2.addEventListener("click", () => {
 
 formElem.addEventListener("submit", async (e) => {
     e.preventDefault();
-
+    onStartComputeIsochrone?.();
     if (isFormSubmitted) {
         abortController.abort();
         abortController = new AbortController();
@@ -1050,6 +1064,8 @@ formElem.addEventListener("submit", async (e) => {
     isFormSubmitted = false;
     submitButton.classList.remove("btn-cancel-request");
     submitButton.innerHTML = `<img src="./assets/images/target.png" width="20" height="20"> Calculer`;
+    
+    onFinishComputeIsochrone?.();
 });
 
 legendControls_opacitySliders.forEach((ctrl) => {
