@@ -155,6 +155,18 @@ input[type='radio'] {
     display: none;
 }
 
+.legend-container .hidden {
+    display:none;
+}
+
+.legend-container .legend-optimal-time {
+    text-align: center;
+}
+
+.legend-container .legend-optimal-time strong {
+    font-weight: 550;
+}
+
 .column-wrapper {
     display: flex;
     flex-direction: row;
@@ -253,11 +265,6 @@ input[type='radio'] {
 }
 
 /* Form */
-
-#form {
-    /* max-height: 80vh; */
-    /* overflow-y: scroll; */
-}
 
 .form-container-outer {
     bottom: 32px;

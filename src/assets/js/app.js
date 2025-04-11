@@ -1,6 +1,5 @@
 const mapElem = document.getElementById("map");
-// const HRDF_SERVER_URL = "https://iso.hepiapp.ch/api/";
-const HRDF_SERVER_URL = "http://localhost:8100/";
+const HRDF_SERVER_URL = "https://iso.hepiapp.ch/api/";
 
 /** Pretty Palettes ! */
 const palette1 = [
@@ -222,12 +221,12 @@ const displayIsochroneMap = async (idx, clear = true) => {
         clearPreviousIsochroneMap();
     }
     let isochroneMap;
-
+    let params = new URLSearchParams(getRequestParams(idx));
     try {
         const response = await fetch(
             HRDF_SERVER_URL +
                 "isochrones?" +
-                new URLSearchParams(getRequestParams(idx)).toString(),
+                params.toString(),
             {
                 signal: abortController.signal,
             },
@@ -248,11 +247,15 @@ const displayIsochroneMap = async (idx, clear = true) => {
         );
         return;
     }
+    if (params.get("find_optimal") === "true") {
+        let departure_at = isochroneMap.departure_at;
+        setOptimalTimeInLegend(departure_at, idx);
+    }
 
     // // Centers on the origin point and sets the appropriate zoom level.
     // map.fitBounds([isochroneMap.bounding_box[0], isochroneMap.bounding_box[1]], { animate: false });
     // map.setView([originPointCoord[0], originPointCoord[1]], undefined, { animate: false });
-
+    
     displayIsochrones(isochroneMap, idx);
     legendContainer.classList.remove("hidden");
 
@@ -265,6 +268,10 @@ const clearPreviousIsochroneMap = () => {
     document
         .querySelectorAll(".legend-controls")
         .forEach((elem) => elem.classList.add("hidden"));
+    document
+        .querySelectorAll(".legend-optimal-time")
+        .forEach((elem) => elem.classList.add("hidden"));
+    document.getElementById("legend-container").classList.add("hidden")
     // Remove the furthest point markers if they're present
     removeFurthestMarker(0);
     removeFurthestMarker(1);
@@ -510,6 +517,21 @@ const setMaxDistanceInLegend = (value, iso_index, fix = 2) => {
     }
     // Write the value
     distanceLabelElement.innerHTML = value.toFixed(fix);
+};
+
+const setOptimalTimeInLegend = (value, iso_index) => {
+    // Search for the element
+    let name = `#legend-optimal-time-${iso_index + 1}`;
+    let timeLabelElement = document.querySelector(name);
+    let datE= timeLabelElement.querySelector(".optimal-date")
+    let timE= timeLabelElement.querySelector(".optimal-time")
+    let dateValue = value.split("T")[0];
+    let timeValue = value.split("T")[1];
+
+    timeLabelElement.classList.remove("hidden");
+    // Write the value
+    datE.innerHTML = dateValue;
+    timE.innerHTML = timeValue;
 };
 
 /**
