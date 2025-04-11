@@ -834,6 +834,52 @@ const closeAboutModal = () => {
     document.getElementById("about-modal").classList.add("hidden");
 };
 
+// Toaster
+
+const openToaster = () => {
+    document.getElementById("toast").classList.remove("hidden");
+    startTextCycle();
+};
+
+const closeToaster = () => {
+    document.getElementById("toast").classList.add("hidden");
+    stopTextCycle();
+};
+
+let textCycle;
+let toastMessages = [
+    "Computing isochrones...",
+    "Setting the qubits to random values...",
+    "Quantum computing in progress...",
+    "DUSM computed ! Oh shit, this is not the correct project, please wait...",
+    "Will you marry me ?",
+    "Don't refresh the page!",
+];
+
+const startTextCycle = () => {
+    document.getElementById("toast-content").innerHTML = toastMessages[0];
+    let currentToastMessageIndex = 0;
+    textCycle = setInterval(() => {
+        changeToasterText(
+            toastMessages[currentToastMessageIndex]
+        );
+        currentToastMessageIndex =
+            (currentToastMessageIndex + 1) % toastMessages.length;
+    }, 5000);
+};
+
+const stopTextCycle = () => {
+    clearInterval(textCycle);
+};
+
+const changeToasterText = (text, duration = 0) => {
+    document.getElementById("toast-content").classList.add("hidden");
+    setTimeout(() => {
+        document.getElementById("toast-content").innerHTML = text;
+        document.getElementById("toast-content").classList.remove("hidden");
+    }, duration);
+};
+
 // Event listeners.
 
 // Displays or hides the form.

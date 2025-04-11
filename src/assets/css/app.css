@@ -602,3 +602,35 @@ input[type='radio'] {
     font-weight: 600;
     font-size: 1.2em;
 }
+
+/* Toast */
+
+#toast {
+    position: fixed;    
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    /* background-color: #E2453C; */
+    background-color: white;
+    padding: 16px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 10px 0px rgba(0, 0, 0, 0.17);
+    z-index: 1000;
+    transition: top 0.5s ease-in-out;
+}
+
+#toast.hidden {
+    top: -80px;
+    transition: top 0.5s ease-in-out;
+}
+
+#toast-content {
+    font-weight: 500;
+    opacity: 1.0;
+    transition: opacity 0.5s ease-in-out;
+}
+
+#toast-content.hidden {
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+}
