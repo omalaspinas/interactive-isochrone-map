@@ -1,5 +1,6 @@
 const mapElem = document.getElementById("map");
-const HRDF_SERVER_URL = "https://iso.hepiapp.ch/api/";
+// const HRDF_SERVER_URL = "https://iso.hepiapp.ch/api/";
+const HRDF_SERVER_URL = "http://localhost:8100/";
 
 /** Pretty Palettes ! */
 const palette1 = [
@@ -43,6 +44,7 @@ const isochroneIntervalInput = document.getElementById("isochrone-interval");
 const btnAimMode1 = document.getElementById("lock-origin-point-1");
 const btnAimMode2 = document.getElementById("lock-origin-point-2");
 const btnValidateAim = document.getElementById("validate-aim");
+const findOptimalInput = document.getElementById("find-optimal");
 const submitButton = document.getElementById("submit-button");
 
 /* Second point controls */
@@ -120,6 +122,17 @@ const pin2 = L.icon({
     iconSize: [24, 24],
     iconAnchor: [12, 24],
 });
+
+/** Callbacks */
+
+let onStartComputeIsochrone = () => {
+    console.log("onStartComputeIsochrone trig");
+    findOptimalInput.disabled = true;
+};
+let onFinishComputeIsochrone = () => {
+    console.log("onFinishComputeIsochrone trig");
+    findOptimalInput.disabled = false;
+};
 
 // Different openstreetmap tiles
 var OpenStreetMap_Mapnik = L.tileLayer(
@@ -209,12 +222,12 @@ const displayIsochroneMap = async (idx, clear = true) => {
         clearPreviousIsochroneMap();
     }
     let isochroneMap;
-
+    const params = new URLSearchParams(getRequestParams(idx));
     try {
         const response = await fetch(
             HRDF_SERVER_URL +
                 "isochrones?" +
-                new URLSearchParams(getRequestParams(idx)).toString(),
+                params.toString(),
             {
                 signal: abortController.signal,
             },
@@ -241,6 +254,11 @@ const displayIsochroneMap = async (idx, clear = true) => {
     // map.setView([originPointCoord[0], originPointCoord[1]], undefined, { animate: false });
 
     displayIsochrones(isochroneMap, idx);
+    if (params.get("find_optimal") === "true") {
+        setOptimalDepartInLegend(isochroneMap.departure_at, idx);
+        document.getElementById(`optimal-legend-${idx + 1}`).classList.remove("hidden");
+    }
+    
     legendContainer.classList.remove("hidden");
 
     isochronesLayer.addTo(map);
@@ -251,6 +269,10 @@ const clearPreviousIsochroneMap = () => {
     legend2.innerHTML = "";
     document
         .querySelectorAll(".legend-controls")
+        .forEach((elem) => elem.classList.add("hidden"));
+
+    document
+        .querySelectorAll(".optimal-container")
         .forEach((elem) => elem.classList.add("hidden"));
     // Remove the furthest point markers if they're present
     removeFurthestMarker(0);
@@ -266,7 +288,7 @@ const getRequestParams = (idx = 0) => {
     const departureTime = departureAtInput.value.split("T")[1];
     const timeLimit = timeLimitInput.value;
     const isochroneInterval = isochroneIntervalInput.value;
-
+    const findOptimal = findOptimalInput.checked;
     const params = {
         origin_point_latitude: originPointCoords[idx][0],
         origin_point_longitude: originPointCoords[idx][1],
@@ -276,6 +298,7 @@ const getRequestParams = (idx = 0) => {
         isochrone_interval: isochroneInterval,
         display_mode: "circles",
         //Find optimal param
+        find_optimal: findOptimal,
     };
 
     return params;
@@ -498,6 +521,20 @@ const setMaxDistanceInLegend = (value, iso_index, fix = 2) => {
     distanceLabelElement.innerHTML = value.toFixed(fix);
 };
 
+const setOptimalDepartInLegend = (value, iso_idx) => {
+    // Search for the element
+    let n = `#optimal-legend-${iso_idx + 1}`;
+    let optimalDepartLabelElement = document.querySelector(n);
+    let dateSpan = optimalDepartLabelElement.querySelector("span.optimal-date");
+    let timeSpan = optimalDepartLabelElement.querySelector("span.optimal-time");
+    // Split the value between date and time
+    let [date, time] = value.split("T");
+    // Write the values
+    dateSpan.innerHTML = date;
+    timeSpan.innerHTML = time;
+};
+
+/**
 /**
  * Create a legend entry
  * @param {*} color The color to use
@@ -1024,7 +1061,7 @@ closeOriginPoint2.addEventListener("click", () => {
 
 formElem.addEventListener("submit", async (e) => {
     e.preventDefault();
-
+    onStartComputeIsochrone?.();
     if (isFormSubmitted) {
         abortController.abort();
         abortController = new AbortController();
@@ -1050,6 +1087,8 @@ formElem.addEventListener("submit", async (e) => {
     isFormSubmitted = false;
     submitButton.classList.remove("btn-cancel-request");
     submitButton.innerHTML = `<img src="./assets/images/target.png" width="20" height="20"> Calculer`;
+    
+    onFinishComputeIsochrone?.();
 });
 
 legendControls_opacitySliders.forEach((ctrl) => {

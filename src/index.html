@@ -65,10 +65,7 @@
                     </div>
                     <div id="ctrls-point-2" class="form-group">
                         <div id="ctrls-point-2-hidden">
-                            <a
-                                href="#"
-                                id="add-origin-point-2"
-                                class="btn"
+                            <a href="#" id="add-origin-point-2" class="btn"
                                 >+ Ajouter un point d'origine</a
                             >
                         </div>
@@ -150,7 +147,12 @@
                         >
                         <select id="isochrone-interval" required></select>
                     </div>
-
+                    <div class="form-checkbox">
+                        <input type="checkbox" id="find-optimal" />
+                        <label for="find-optimal"
+                            >Surface optimale</label
+                        >
+                    </div>
                     <div class="mt-6">
                         <button class="btn" id="submit-button" type="submit">
                             <img
@@ -192,62 +194,148 @@
         <div class="legend-container hidden" id="legend-container">
             <div class="column-wrapper">
                 <div class="column">
+                    <div id="optimal-legend-1" class="optimal-container">
+                        <strong>Départ optimal</strong>
+                        <span class="optimal-date">2025-01-01</span><br />
+                        <span class="optimal-time">20:00</span>
+                    </div>
                     <div class="legend" id="legend">
                         <!-- <div class="legend-entry" style="background-color: green;">30 min.</div> -->
                         <!-- <div class="legend-entry" style="background-color: red;">30 min.</div> -->
                     </div>
                     <div class="legend-controls hidden" id="legend-controls-1">
                         <input
-                        type="range"
-                        min="0"
-                        max="100"
-                        value="60"
-                        class="slider"
-                        id="opacity-slider-1"
-                        data-isoindex="0"
+                            type="range"
+                            min="0"
+                            max="100"
+                            value="60"
+                            class="slider"
+                            id="opacity-slider-1"
+                            data-isoindex="0"
                         />
                         <!-- Max : <span id="legend-max-distance-1">-</span> km -->
                     </div>
                 </div>
                 <div class="column">
+                    <div id="optimal-legend-2" class="optimal-container hidden">
+                        <strong>&nbsp;</strong>
+                        <span class="optimal-date">2025-01-01</span><br />
+                        <span class="optimal-time">20:00</span>
+                    </div>
                     <div class="legend" id="legend-2">
                         <!-- <div class="legend-entry" style="background-color: green;">30 min.</div> -->
                         <!-- <div class="legend-entry" style="background-color: red;">30 min.</div> -->
                     </div>
                     <div class="legend-controls hidden" id="legend-controls-2">
                         <input
-                        type="range"
-                        min="0"
-                        max="100"
-                        value="60"
-                        class="slider"
-                        id="opacity-slider-2"
-                        data-isoindex="1"
+                            type="range"
+                            min="0"
+                            max="100"
+                            value="60"
+                            class="slider"
+                            id="opacity-slider-2"
+                            data-isoindex="1"
                         />
                         <!-- Max : <span id="legend-max-distance-2">-</span> km -->
                     </div>
                 </div>
             </div>
             <div class="form-checkbox">
-                <input type="checkbox" id="legend-show-max-distance">
-                <label for="legend-show-max-distance">Afficher la distance maximale</label>
+                <input type="checkbox" id="legend-show-max-distance" />
+                <label for="legend-show-max-distance"
+                    >Afficher la distance maximale</label
+                >
             </div>
         </div>
         <!-- About -->
-        <button class="btn btn-secondary about-button" id="about-button" onclick="openAboutModal()">?</button>
+        <button
+            class="btn btn-secondary about-button"
+            id="about-button"
+            onclick="openAboutModal()"
+        >
+            ?
+        </button>
         <div class="about-modal hidden" id="about-modal">
             <div class="about-modal-content">
-                <a class="about-modal-close" id="about-modal-close" onclick="closeAboutModal()">
-                    <svg width="24px" height="24px" viewBox="0 0 24 24" fill="#484848" xmlns="http://www.w3.org/2000/svg">
-                        <path fill-rule="evenodd" clip-rule="evenodd" d="M5.29289 5.29289C5.68342 4.90237 6.31658 4.90237 6.70711 5.29289L12 10.5858L17.2929 5.29289C17.6834 4.90237 18.3166 4.90237 18.7071 5.29289C19.0976 5.68342 19.0976 6.31658 18.7071 6.70711L13.4142 12L18.7071 17.2929C19.0976 17.6834 19.0976 18.3166 18.7071 18.7071C18.3166 19.0976 17.6834 19.0976 17.2929 18.7071L12 13.4142L6.70711 18.7071C6.31658 19.0976 5.68342 19.0976 5.29289 18.7071C4.90237 18.3166 4.90237 17.6834 5.29289 17.2929L10.5858 12L5.29289 6.70711C4.90237 6.31658 4.90237 5.68342 5.29289 5.29289Z" fill="fill"/>
+                <a
+                    class="about-modal-close"
+                    id="about-modal-close"
+                    onclick="closeAboutModal()"
+                >
+                    <svg
+                        width="24px"
+                        height="24px"
+                        viewBox="0 0 24 24"
+                        fill="#484848"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                            fill-rule="evenodd"
+                            clip-rule="evenodd"
+                            d="M5.29289 5.29289C5.68342 4.90237 6.31658 4.90237 6.70711 5.29289L12 10.5858L17.2929 5.29289C17.6834 4.90237 18.3166 4.90237 18.7071 5.29289C19.0976 5.68342 19.0976 6.31658 18.7071 6.70711L13.4142 12L18.7071 17.2929C19.0976 17.6834 19.0976 18.3166 18.7071 18.7071C18.3166 19.0976 17.6834 19.0976 17.2929 18.7071L12 13.4142L6.70711 18.7071C6.31658 19.0976 5.68342 19.0976 5.29289 18.7071C4.90237 18.3166 4.90237 17.6834 5.29289 17.2929L10.5858 12L5.29289 6.70711C4.90237 6.31658 4.90237 5.68342 5.29289 5.29289Z"
+                            fill="fill"
+                        />
                     </svg>
                 </a>
                 <div>
-                    <h1>Tenderloin</h1>
-                    <p>Hamburger porchetta ground round, bacon pork meatloaf shoulder shank cow. Alcatra sausage t-bone kielbasa. Salami turkey drumstick pastrami venison. Venison filet mignon kevin flank capicola turducken. Chicken t-bone short loin beef ribs shankle, rump pig chuck alcatra. Shank pig ribeye turducken, pork jerky short ribs pork belly chislic beef shoulder rump doner pork loin. Pastrami cupim venison bacon, tenderloin cow shoulder spare ribs pork belly flank chicken landjaeger prosciutto tail drumstick.</p>
+                    <h1>Calcul d'isochrones</h1>
+                    <p>
+                        <a href="https://iso.hepiapp.ch">Isochrones</a> est un
+                        outil interactif pour visualiser les
+                        <a href="https://fr.wikipedia.org/wiki/Carte_isochrone"
+                            >cartes isochrones</a
+                        >
+                        en Suisse. Ainsi, la plateforme permet de calculer et
+                        comparer facilement les zones accessibles, à pieds et en
+                        transports publics Suisses, en un temps donné depuis un
+                        endroit en Suisse en fonction d'une heure de départ.
+                    </p>
 
-                    <h2>Test</h2>
-                    <h3>Wiiiii</h3>
+                    <h2>Source des données</h2>
+                    <p>
+                        Les données proviennent des
+                        <a
+                            href="https://opendata.swiss/fr/dataset/timetable-54-2025-hrdf"
+                            >horaires</a
+                        >
+                        des transports publics Suisses.
+                    </p>
+                    <h3>Code source</h3>
+                    Les codes source pour ce projet se trouvent sur les liens:
+                    <ul>
+                        <li>
+                            <a
+                                href="https://github.com/florianburgener/hrdf-parser"
+                                >Parser HRDF</a
+                            >
+                        </li>
+                        <li>
+                            <a
+                                href="https://github.com/florianburgener/hrdf-routing-engine"
+                                >Planificateur de trajets</a
+                            >
+                        </li>
+                        <li>
+                            <a
+                                href="https://github.com/florianburgener/interactive-isochrone-map"
+                                >Site web</a
+                            >
+                        </li>
+                    </ul>
+                    <h3>Crédits</h3>
+                    <a href="https://github.com/florianburgener">F. Burgener</a
+                    >, A. Durgnat,
+                    <a href="https://github.com/Foebus">M. Gay-Balmaz</a>,
+                    <a
+                        href="https://people.hes-so.ch/en/profile/4037691745-orestis-malaspinas"
+                        >O. Malaspinas</a
+                    >
+                    <div>
+                        <a href="https://www.hesge.ch/hepia"
+                            >Haute école du paysage d'ingénierie et
+                            d'architecture</a
+                        >
+                    </div>
                 </div>
             </div>
         </div>

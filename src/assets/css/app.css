@@ -169,10 +169,8 @@ input[type='radio'] {
 .form-checkbox {
    display: flex;
    flex-direction: row;
-    /* flex-direction: row;
-    align-items: center;
-    position: relative;
-  width: 50%; */
+   align-items: center;
+   width: 100%; 
 }
 
 .form-checkbox label {
@@ -254,6 +252,19 @@ input[type='radio'] {
     display: none;
 }
 
+.optimal-container {
+    text-align: center;
+}
+
+.optimal-container.hidden {
+    display: none;
+}
+
+.optimal-container strong {
+    display: block;
+    font-weight: 600;
+    font-size: 0.9em;
+}
 /* Form */
 
 #form {
