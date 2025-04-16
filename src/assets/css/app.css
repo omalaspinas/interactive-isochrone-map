@@ -641,7 +641,7 @@ input[type="radio"] {
     border: 2px solid #201f1f;
 }
 #toast .loader::after {
-    border-color: #ff3d00;
+    border-color: #e2453C;
     top: 6px;
     left: 6px;
     bottom: 6px;
@@ -650,25 +650,20 @@ input[type="radio"] {
 }
 
 #toast p {
-    line-height: 0px;
+    line-height: normal;
     position: relative;
-    /* top: calc(50% - 0.5lh); */
-    /* bottom: 50%; */
     margin: auto;
-    /* left: calc(var(--loader-width) + 16px + 16px); */
-    /* right: 0px;s */
-    /* bottom: 0px; */
-    /* line-height: normal; */
-    /* font-size: normal; */
     opacity: 1;
-    transition: opacity 0.5s ease-in-out;
+    transition: opacity 0.5s ease-in-out,  line-height 0.5s ease-in-out;
+}
+
+#toast p.noline {  
+    line-height: 0px;
 }
 
 #toast p.hidden {
     opacity: 0;
-    /* line-height: 0px; */
-    /* font-size: 0px; */
-    transition: opacity 0.5s ease-in-out
+    transition: opacity 0.5s ease-in-out, line-height 0.5s ease-in-out;
 }
 
 #toast.hidden {

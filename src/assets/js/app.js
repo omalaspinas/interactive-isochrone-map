@@ -852,23 +852,24 @@ let textCycle;
 
 const startTextCycle = () => {
     let messages = document.getElementById("toast-content").querySelectorAll("p");
-    let len = 0;
+
     messages.forEach((message) => {
-        if (message.innerHTML.length > len) {
-            len = message.innerHTML.length;
-        }
+
         message.classList.add("hidden");
     })
     
     // Fill the spacer with the longest message
     // document.getElementById("toast-spacer").innerHTML = "".padEnd(len, "&nbsp;");
     let currentToastMessageIndex = 0;
-    messages[currentToastMessageIndex].classList.remove("hidden");
+    messages[currentToastMessageIndex].classList.remove("hidden", "noline");
     textCycle = setInterval(() => {
         console.log("Changing to " + currentToastMessageIndex);
         messages[currentToastMessageIndex].classList.add("hidden");
-        currentToastMessageIndex = (currentToastMessageIndex + 1) % messages.length;
-        messages[currentToastMessageIndex].classList.remove("hidden");
+        setTimeout(() => {
+            messages[currentToastMessageIndex].classList.add("noline");
+            currentToastMessageIndex = (currentToastMessageIndex + 1) % messages.length;
+            messages[currentToastMessageIndex].classList.remove("hidden", "noline");
+        }, 500);
     }, 5000);
 };
 
