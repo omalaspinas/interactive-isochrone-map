@@ -128,10 +128,12 @@ const pin2 = L.icon({
 let onStartComputeIsochrone = () => {
     console.log("onStartComputeIsochrone trig");
     findOptimalInput.disabled = true;
+    openToaster();
 };
 let onFinishComputeIsochrone = () => {
     console.log("onFinishComputeIsochrone trig");
     findOptimalInput.disabled = false;
+    closeToaster();
 };
 
 // Different openstreetmap tiles
@@ -847,24 +849,26 @@ const closeToaster = () => {
 };
 
 let textCycle;
-let toastMessages = [
-    "Computing isochrones...",
-    "Setting the qubits to random values...",
-    "Quantum computing in progress...",
-    "DUSM computed ! Oh shit, this is not the correct project, please wait...",
-    "Will you marry me ?",
-    "Don't refresh the page!",
-];
 
 const startTextCycle = () => {
-    document.getElementById("toast-content").innerHTML = toastMessages[0];
+    let messages = document.getElementById("toast-content").querySelectorAll("p");
+    let len = 0;
+    messages.forEach((message) => {
+        if (message.innerHTML.length > len) {
+            len = message.innerHTML.length;
+        }
+        message.classList.add("hidden");
+    })
+    
+    // Fill the spacer with the longest message
+    // document.getElementById("toast-spacer").innerHTML = "".padEnd(len, "&nbsp;");
     let currentToastMessageIndex = 0;
+    messages[currentToastMessageIndex].classList.remove("hidden");
     textCycle = setInterval(() => {
-        changeToasterText(
-            toastMessages[currentToastMessageIndex]
-        );
-        currentToastMessageIndex =
-            (currentToastMessageIndex + 1) % toastMessages.length;
+        console.log("Changing to " + currentToastMessageIndex);
+        messages[currentToastMessageIndex].classList.add("hidden");
+        currentToastMessageIndex = (currentToastMessageIndex + 1) % messages.length;
+        messages[currentToastMessageIndex].classList.remove("hidden");
     }, 5000);
 };
 

@@ -21,7 +21,22 @@
     <body class="marker-cursor">
         <div id="map"></div>
         <!-- Toaster -->
-        <div id="toast" class="hidden"><p id="toast-content">I'm an awesome toast!</p></div>
+        <div id="toast" class="hidden">
+            <div class="loader-container">
+                <div class="loader"></div>
+            </div>
+            <div id="toast-content">
+                <!-- <div id="toast-spacer"></div> -->
+                <p>Calcul de l'isochrone en cours...</p>
+                <p class="hidden">Calcul toujours en cours...</p>
+                <p class="hidden">Encore quelques secondes...</p>
+                <p class="hidden">C'est long...</p>
+                <p class="hidden">C'est long !</p>
+                <p class="hidden">C'est vraiment long...</p>
+                <!-- <p class="hidden">I'm an awesome toast!</p> -->
+                <!-- <p class="hidden">I'm an awesome toast!</p> -->
+            </div>
+        </div>
         <!-- Form -->
         <div class="form-container-outer" id="form-container-outer">
             <div class="form-container">
