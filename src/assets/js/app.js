@@ -1,6 +1,5 @@
 const mapElem = document.getElementById("map");
-// const HRDF_SERVER_URL = "https://iso.hepiapp.ch/api/";
-const HRDF_SERVER_URL = "http://localhost:8100/";
+const HRDF_SERVER_URL = "https://iso.hepiapp.ch/api/";
 
 /** Pretty Palettes ! */
 const palette1 = [
@@ -227,9 +226,7 @@ const displayIsochroneMap = async (idx, clear = true) => {
     const params = new URLSearchParams(getRequestParams(idx));
     try {
         const response = await fetch(
-            HRDF_SERVER_URL +
-                "isochrones?" +
-                params.toString(),
+            HRDF_SERVER_URL + "isochrones?" + params.toString(),
             {
                 signal: abortController.signal,
             },
@@ -258,9 +255,11 @@ const displayIsochroneMap = async (idx, clear = true) => {
     displayIsochrones(isochroneMap, idx);
     if (params.get("find_optimal") === "true") {
         setOptimalDepartInLegend(isochroneMap.departure_at, idx);
-        document.getElementById(`optimal-legend-${idx + 1}`).classList.remove("hidden");
+        document
+            .getElementById(`optimal-legend-${idx + 1}`)
+            .classList.remove("hidden");
     }
-    
+
     legendContainer.classList.remove("hidden");
 
     isochronesLayer.addTo(map);
@@ -851,13 +850,14 @@ const closeToaster = () => {
 let textCycle;
 
 const startTextCycle = () => {
-    let messages = document.getElementById("toast-content").querySelectorAll("p");
+    let messages = document
+        .getElementById("toast-content")
+        .querySelectorAll("p");
 
     messages.forEach((message) => {
-
         message.classList.add("hidden");
-    })
-    
+    });
+
     // Fill the spacer with the longest message
     // document.getElementById("toast-spacer").innerHTML = "".padEnd(len, "&nbsp;");
     let currentToastMessageIndex = 0;
@@ -867,8 +867,12 @@ const startTextCycle = () => {
         messages[currentToastMessageIndex].classList.add("hidden");
         setTimeout(() => {
             messages[currentToastMessageIndex].classList.add("noline");
-            currentToastMessageIndex = (currentToastMessageIndex + 1) % messages.length;
-            messages[currentToastMessageIndex].classList.remove("hidden", "noline");
+            currentToastMessageIndex =
+                (currentToastMessageIndex + 1) % messages.length;
+            messages[currentToastMessageIndex].classList.remove(
+                "hidden",
+                "noline",
+            );
         }, 500);
     }, 5000);
 };
@@ -1138,7 +1142,7 @@ formElem.addEventListener("submit", async (e) => {
     isFormSubmitted = false;
     submitButton.classList.remove("btn-cancel-request");
     submitButton.innerHTML = `<img src="./assets/images/target.png" width="20" height="20"> Calculer`;
-    
+
     onFinishComputeIsochrone?.();
 });
 
