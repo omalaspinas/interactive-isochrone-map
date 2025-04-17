@@ -154,6 +154,18 @@ input[type="radio"] {
     display: none;
 }
 
+.legend-container .hidden {
+    display:none;
+}
+
+.legend-container .legend-optimal-time {
+    text-align: center;
+}
+
+.legend-container .legend-optimal-time strong {
+    font-weight: 550;
+}
+
 .column-wrapper {
     display: flex;
     flex-direction: row;
@@ -166,10 +178,17 @@ input[type="radio"] {
 }
 
 .form-checkbox {
+<<<<<<< HEAD
     display: flex;
     flex-direction: row;
     align-items: center;
     width: 100%;
+=======
+   display: flex;
+   flex-direction: row;
+   align-items: center;
+   width: 100%; 
+>>>>>>> front-optimal-surface
 }
 
 .form-checkbox label {
@@ -263,11 +282,6 @@ input[type="radio"] {
     font-size: 0.9em;
 }
 /* Form */
-
-#form {
-    /* max-height: 80vh; */
-    /* overflow-y: scroll; */
-}
 
 .form-container-outer {
     bottom: 32px;
