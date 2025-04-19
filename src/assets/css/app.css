@@ -122,11 +122,15 @@ input[type="radio"] {
     cursor: url(./../images/marker.png) 16 38, auto !important;
 } */
 .cursor-marker-0 {
-    cursor: url(./../images/marker.png) 16 38, auto !important;
+    cursor:
+        url(./../images/marker.png) 16 38,
+        auto !important;
 }
 
 .cursor-marker-1 {
-    cursor: url(./../images/marker_red.png) 16 38, auto !important;
+    cursor:
+        url(./../images/marker_red.png) 16 38,
+        auto !important;
 }
 
 .leaflet-interactive {
@@ -155,7 +159,7 @@ input[type="radio"] {
 }
 
 .legend-container .hidden {
-    display:none;
+    display: none;
 }
 
 .legend-container .legend-optimal-time {
@@ -178,17 +182,10 @@ input[type="radio"] {
 }
 
 .form-checkbox {
-<<<<<<< HEAD
     display: flex;
     flex-direction: row;
     align-items: center;
     width: 100%;
-=======
-   display: flex;
-   flex-direction: row;
-   align-items: center;
-   width: 100%; 
->>>>>>> front-optimal-surface
 }
 
 .form-checkbox label {
@@ -623,7 +620,9 @@ input[type="radio"] {
     border: 1px solid #ccc;
     box-shadow: 0px 4px 10px 0px rgba(0, 0, 0, 0.17);
     z-index: 1000;
-    transition: top 0.5s ease-in-out, width 1s ease-in-out;
+    transition:
+        top 0.5s ease-in-out,
+        width 1s ease-in-out;
     background: linear-gradient(to bottom, white, #f0f0f0);
 }
 
@@ -655,7 +654,7 @@ input[type="radio"] {
     border: 2px solid #201f1f;
 }
 #toast .loader::after {
-    border-color: #e2453C;
+    border-color: #e2453c;
     top: 6px;
     left: 6px;
     bottom: 6px;
@@ -668,16 +667,20 @@ input[type="radio"] {
     position: relative;
     margin: auto;
     opacity: 1;
-    transition: opacity 0.5s ease-in-out,  line-height 0.5s ease-in-out;
+    transition:
+        opacity 0.5s ease-in-out,
+        line-height 0.5s ease-in-out;
 }
 
-#toast p.noline {  
+#toast p.noline {
     line-height: 0px;
 }
 
 #toast p.hidden {
     opacity: 0;
-    transition: opacity 0.5s ease-in-out, line-height 0.5s ease-in-out;
+    transition:
+        opacity 0.5s ease-in-out,
+        line-height 0.5s ease-in-out;
 }
 
 #toast.hidden {

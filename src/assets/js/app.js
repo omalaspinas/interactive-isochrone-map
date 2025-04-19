@@ -223,11 +223,7 @@ const displayIsochroneMap = async (idx, clear = true) => {
         clearPreviousIsochroneMap();
     }
     let isochroneMap;
-    // <<<<<<< HEAD
     const params = new URLSearchParams(getRequestParams(idx));
-    // =======
-    //     let params = new URLSearchParams(getRequestParams(idx));
-    // >>>>>>> front-optimal-surface
     try {
         const response = await fetch(
             HRDF_SERVER_URL + "isochrones?" + params.toString(),
@@ -279,17 +275,14 @@ const clearPreviousIsochroneMap = () => {
     document
         .querySelectorAll(".legend-controls")
         .forEach((elem) => elem.classList.add("hidden"));
-    // <<<<<<< HEAD
 
     document
         .querySelectorAll(".optimal-container")
         .forEach((elem) => elem.classList.add("hidden"));
-    // =======
     document
         .querySelectorAll(".legend-optimal-time")
         .forEach((elem) => elem.classList.add("hidden"));
     document.getElementById("legend-container").classList.add("hidden");
-    // >>>>>>> front-optimal-surface
     // Remove the furthest point markers if they're present
     removeFurthestMarker(0);
     removeFurthestMarker(1);
@@ -523,7 +516,6 @@ const setMaxDistanceInLegend = (value, iso_index, fix = 2) => {
     distanceLabelElement.innerHTML = value.toFixed(fix);
 };
 
-// <<<<<<< HEAD
 const setOptimalDepartInLegend = (value, iso_idx) => {
     // Search for the element
     let n = `#optimal-legend-${iso_idx + 1}`;
@@ -537,24 +529,6 @@ const setOptimalDepartInLegend = (value, iso_idx) => {
     timeSpan.innerHTML = time;
 };
 
-// /**
-// =======
-// const setOptimalTimeInLegend = (value, iso_index) => {
-//     // Search for the element
-//     let name = `#legend-optimal-time-${iso_index + 1}`;
-//     let timeLabelElement = document.querySelector(name);
-//     let datE = timeLabelElement.querySelector(".optimal-date");
-//     let timE = timeLabelElement.querySelector(".optimal-time");
-//     let dateValue = value.split("T")[0];
-//     let timeValue = value.split("T")[1];
-//
-//     timeLabelElement.classList.remove("hidden");
-//     // Write the value
-//     datE.innerHTML = dateValue;
-//     timE.innerHTML = timeValue;
-// };
-//
-// >>>>>>> front-optimal-surface
 /**
  * Create a legend entry
  * @param {*} color The color to use
