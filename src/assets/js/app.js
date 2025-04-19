@@ -356,8 +356,6 @@ const displayIsochrones = async (isochroneMap, index = 0) => {
                 }
                 ext_int_poly.push(int_points);
             }
-            // console.log(interiors);
-            // console.log(latlngs);
             // Build the polygon
             let poly = L.polygon(ext_int_poly, {
                 color: "black",
@@ -394,7 +392,6 @@ const displayIsochrones = async (isochroneMap, index = 0) => {
             continue;
         }
         try {
-            console.log(toKm2(isochroneMap.areas[len - i - 1]) + " km²");
             setAreaInLegend(
                 toKm2(isochroneMap.areas[len - i - 1]) + " km²",
                 index,
