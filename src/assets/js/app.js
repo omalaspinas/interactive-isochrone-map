@@ -135,6 +135,16 @@ let onFinishComputeIsochrone = () => {
     closeToaster();
 };
 
+const ResetToaster = () => {
+    let messages = document
+        .getElementById("toast-content")
+        .querySelectorAll("p");
+
+    messages.forEach((message) => {
+        message.classList.add("hidden");
+    });
+};
+
 // Different openstreetmap tiles
 var OpenStreetMap_Mapnik = L.tileLayer(
     "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -381,6 +391,7 @@ const displayIsochrones = async (isochroneMap, index = 0) => {
     for (let i = len - 1; i >= 0; i--) {
         if (aborted) {
             //The work has been aborted, report.
+            ResetToaster();
             setAreaInLegend("ABORTED", index, i);
             continue;
         }
@@ -394,6 +405,7 @@ const displayIsochrones = async (isochroneMap, index = 0) => {
             // The worker has been aborted
             console.log(err);
             aborted = true;
+            ResetToaster();
             setAreaInLegend("ABORTED", index, i);
         }
         if (i === 0) {
@@ -843,12 +855,16 @@ const closeToaster = () => {
 let textCycle;
 
 const startTextCycle = () => {
+    if (textCycle !== undefined || textCycle !== null) {
+        stopTextCycle();
+    }
+
     let messages = document
         .getElementById("toast-content")
         .querySelectorAll("p");
 
     messages.forEach((message) => {
-        message.classList.add("hidden");
+        message.classList.add("hidden", "noline");
     });
 
     // Fill the spacer with the longest message
