@@ -461,46 +461,6 @@ const placePin = (coord, distance, index = 0, fix = 2) => {
 };
 
 /**
- * Merges a list of polygons into a single polygon, or a multipolygon if it is disjoint.
- * @param {Array} polys The list of polygons to merge.
- * @returns A promise that resolves to a single polygon representing the union of the input polygons.
- */
-async function mergePolys(polys) {
-    function work({ data }) {
-        importScripts("https://cdn.jsdelivr.net/npm/@turf/turf@7/turf.min.js");
-        if (data.length === 0) {
-            throw new Error("Cannot compute union of empty polygon list");
-        } else if (data.length === 1) {
-            postMessage(data[0]);
-        } else {
-            let turfpolys = [];
-            for (let p = 0; p < data.length; p++) {
-                turfpoly = turf.polygon(data[p].geometry.coordinates);
-                turfpolys.push(turfpoly);
-            }
-            union = turf.union(turf.featureCollection(turfpolys));
-            postMessage(union);
-        }
-    }
-
-    let blob = new Blob(["onmessage =" + work.toString()], {
-        type: "application/javascript",
-    });
-    let worker = new Worker(URL.createObjectURL(blob));
-    workers.push(worker);
-    worker.postMessage(polys);
-
-    return await new Promise((resolve, reject) => {
-        workerAbortController.signal.addEventListener("abort", () => {
-            reject("Worker aborted");
-        });
-        worker.onmessage = (e) => {
-            resolve(e.data);
-        };
-    });
-}
-
-/**
  *
  * @param {string} value The value to write in the legend
  * @param {number} iso_index The isochrone index (0 for first, 1 for second)
@@ -961,7 +921,7 @@ selectOriginPointElem2.addEventListener("click", () => {
 
 /** Triggered when the map is being dragged around
  */
-map.on("dragstart", (e) => {
+map.on("dragstart", (_) => {
     if (!isAiming) {
         return;
     }
@@ -980,7 +940,7 @@ map.on("dragstart", (e) => {
 /**
  * Triggered when the map is moved.
  */
-map.on("move", (e) => {
+map.on("move", (_) => {
     if (!isAiming) {
         return;
     }
@@ -1013,7 +973,7 @@ map.on("move", (e) => {
     isSelectingOriginPoint = false;
 });
 
-map.on("moveend", (e) => {
+map.on("moveend", (_) => {
     if (isMapMoving) {
         isMapMoving = false;
     }
@@ -1162,11 +1122,11 @@ legendControls_opacitySliders.forEach((ctrl) => {
     });
 });
 
-legend.addEventListener("click", (e) => {
+legend.addEventListener("click", (_) => {
     bringToFront(0);
 });
 
-legend2.addEventListener("click", (e) => {
+legend2.addEventListener("click", (_) => {
     bringToFront(1);
 });
 
