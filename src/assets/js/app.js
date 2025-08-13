@@ -215,8 +215,8 @@ const setMinMaxDepartureAt = async () => {
         const response = await fetch(HRDF_SERVER_URL + "metadata");
         const metadata = await response.json();
 
-        departureAtInput.min = metadata.start_date + " 00:00";
-        departureAtInput.max = metadata.end_date + " 23:59";
+        departureAtInput.min = `${metadata.start_date}T00:00`;
+        departureAtInput.max = `${metadata.end_date}T23:59`;
     } catch (err) {
         // alert("Une erreur inconnue s'est produite lors du chargement des métadonnées.");
         return;
@@ -303,8 +303,9 @@ const clearPreviousIsochroneMap = () => {
 };
 
 const getRequestParams = (idx = 0) => {
-    const departureDate = departureAtInput.value.split("T")[0];
-    const departureTime = departureAtInput.value.split("T")[1];
+    const [departureDate, departureTime] = departureAtInput.value
+        .replace(" ", "T")
+        .split("T");
     const timeLimit = timeLimitInput.value;
     const isochroneInterval = isochroneIntervalInput.value;
     const findOptimal = findOptimalInput.checked;
@@ -555,13 +556,13 @@ const updateIsochroneIntervalOptions = () => {
  */
 const getCurrentDateTime = () => {
     const now = new Date();
-    const year = now.getFullYear().toString().padStart(2, "0");
-    const month = (now.getMonth() + 1).toString().padStart(2, "0");
-    const day = now.getDate().toString().padStart(2, "0");
-    const hour = now.getHours().toString().padStart(2, "0");
-    const minute = now.getMinutes().toString().padStart(2, "0");
-
-    return year + "-" + month + "-" + day + " " + hour + ":" + minute;
+    const pad = (v) => String(v).padStart(2, "0");
+    const year = now.getFullYear();
+    const month = pad(now.getMonth() + 1);
+    const day = pad(now.getDate());
+    const hour = pad(now.getHours());
+    const minute = pad(now.getMinutes());
+    return `${year}-${month}-${day}T${hour}:${minute}`; // NOTE the 'T'
 };
 
 /**
