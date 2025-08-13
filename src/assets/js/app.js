@@ -127,8 +127,10 @@ const pin2 = L.icon({
 let onStartComputeIsochrone = () => {
     console.log("onStartComputeIsochrone trig");
     findOptimalInput.disabled = true;
+    toggleMaxDistanceCbx.checked = false;
     openToaster();
 };
+
 let onFinishComputeIsochrone = () => {
     console.log("onFinishComputeIsochrone trig");
     findOptimalInput.disabled = false;
@@ -442,7 +444,7 @@ const toKm = (val, fix = 2) => {
 /**
  *
  * @param {Array} coord The coordinate to place the pin at, as [lng, lat]
- * @param {number} distance The distance from the origin, in km
+ * @param {number} distance The distance from the origin, in meters
  * @param {number} index The index of the isochrone map (0 for first, 1 for second)
  * @param {number} fix The number of decimal places to show in the marker popup
  */
@@ -456,7 +458,7 @@ const placePin = (coord, distance, index = 0, fix = 2) => {
     });
     furthestMarkersLayerGroup.addLayer(mkr);
     mkr.bindPopup(
-        "<p>Distance depuis l'origine : " + toKm(distance, fix) + " km</p>",
+        `<p>Distance depuis l'origine : ${toKm(distance, fix)} km</p>`,
     );
     furthestMarkers[index] = mkr;
 };
@@ -942,13 +944,11 @@ map.on("dragstart", (_) => {
  * Triggered when the map is moved.
  */
 map.on("move", (_) => {
-    if (!isAiming) {
+    if (!isAiming || isMapMoving) {
         return;
     }
-    if (isMapMoving) {
-        return;
-    }
-    let index = isSelectingOriginPoint_markerIndex;
+    const index = isSelectingOriginPoint_markerIndex;
+
     //Remove current marker
     removeMarker(index);
 
@@ -957,15 +957,17 @@ map.on("move", (_) => {
         map.getCenter().lat + originPointOffsets[index][0],
         map.getCenter().lng + originPointOffsets[index][1],
     ];
+
     markers[index] = createMarker(
         originPointCoords[index][0],
         originPointCoords[index][1],
         index,
     );
 
-    mapElem.classList.remove("cursor-marker");
-    selectOriginPointElem1.classList.remove("selecting-origin-point");
-    selectOriginPointElem1.innerHTML = `<img src="./assets/images/origin-point.png" width="15"> Changer de point d'origine`;
+    mapElem.classList.remove(`cursor-marker-${index}`);
+    const btn = selectOriginPointElems[index];
+    btn.classList.remove("selecting-origin-point");
+    btn.innerHTML = `<img src="./assets/images/origin-point.png" width="15"> Changer de point d'origine`;
     setCoordValue(
         index,
         originPointCoords[index][0],
