@@ -1086,25 +1086,29 @@ closeOriginPoint2.addEventListener("click", () => {
 formElem.addEventListener("submit", async (e) => {
     e.preventDefault();
     onStartComputeIsochrone?.();
+
     if (isFormSubmitted) {
         abortController.abort();
         abortController = new AbortController();
         return;
     }
+
     isFormSubmitted = true;
     submitButton.classList.add("btn-cancel-request");
     submitButton.innerHTML = `<img src="./assets/images/target.png" width="20" height="20"> Annuler`;
 
-    await displayIsochroneMap(0);
-    if (originPointCoords[1] !== null) {
-        await displayIsochroneMap(1, false);
+    try {
+        await displayIsochroneMap(0);
+        if (originPointCoords[1] !== null) {
+            await displayIsochroneMap(1, false);
+        }
+    } finally {
+        isFormSubmitted = false;
+        submitButton.classList.remove("btn-cancel-request");
+        submitButton.innerHTML = `<img src="./assets/images/target.png" width="20" height="20"> Calculer`;
+
+        onFinishComputeIsochrone?.();
     }
-
-    isFormSubmitted = false;
-    submitButton.classList.remove("btn-cancel-request");
-    submitButton.innerHTML = `<img src="./assets/images/target.png" width="20" height="20"> Calculer`;
-
-    onFinishComputeIsochrone?.();
 });
 
 legendControls_opacitySliders.forEach((ctrl) => {
