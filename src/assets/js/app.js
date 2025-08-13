@@ -65,7 +65,6 @@ let isSelectingOriginPoint_markerIndex = 0;
 let markers = [null, null];
 let furthestMarkers = [null, null];
 let furthestMarkersLayerGroup = null;
-let workers = [];
 
 let selectOriginPointElems = [selectOriginPointElem1, selectOriginPointElem2];
 let originPointCoordValueElem1 = document.getElementById(
@@ -85,9 +84,7 @@ let isochronesLayer = null;
 // let originPointCoord2 = null;
 let originPointCoords = [null, null];
 let isFormSubmitted = false;
-let isWorkersRunning = false;
 let abortController = new AbortController();
-let workerAbortController = new AbortController();
 let legendControls_opacitySliders = document.querySelectorAll(
     '.legend-controls input[type="range"]',
 );
@@ -127,8 +124,10 @@ const pin2 = L.icon({
 let onStartComputeIsochrone = () => {
     console.log("onStartComputeIsochrone trig");
     findOptimalInput.disabled = true;
+    toggleMaxDistanceCbx.checked = false;
     openToaster();
 };
+
 let onFinishComputeIsochrone = () => {
     console.log("onFinishComputeIsochrone trig");
     findOptimalInput.disabled = false;
@@ -215,8 +214,8 @@ const setMinMaxDepartureAt = async () => {
         const response = await fetch(HRDF_SERVER_URL + "metadata");
         const metadata = await response.json();
 
-        departureAtInput.min = metadata.start_date + " 00:00";
-        departureAtInput.max = metadata.end_date + " 23:59";
+        departureAtInput.min = `${metadata.start_date}T00:00`;
+        departureAtInput.max = `${metadata.end_date}T23:59`;
     } catch (err) {
         // alert("Une erreur inconnue s'est produite lors du chargement des métadonnées.");
         return;
@@ -303,8 +302,9 @@ const clearPreviousIsochroneMap = () => {
 };
 
 const getRequestParams = (idx = 0) => {
-    const departureDate = departureAtInput.value.split("T")[0];
-    const departureTime = departureAtInput.value.split("T")[1];
+    const [departureDate, departureTime] = departureAtInput.value
+        .replace(" ", "T")
+        .split("T");
     const timeLimit = timeLimitInput.value;
     const isochroneInterval = isochroneIntervalInput.value;
     const findOptimal = findOptimalInput.checked;
@@ -440,8 +440,8 @@ const toKm = (val, fix = 2) => {
 
 /**
  *
- * @param {Array} coord The coordinate to place the pin at, as [lng, lat]
- * @param {number} distance The distance from the origin, in km
+ * @param {Array} coord The coordinate to place the pin at, as [lat, lng]
+ * @param {number} distance The distance from the origin, in meters
  * @param {number} index The index of the isochrone map (0 for first, 1 for second)
  * @param {number} fix The number of decimal places to show in the marker popup
  */
@@ -455,50 +455,10 @@ const placePin = (coord, distance, index = 0, fix = 2) => {
     });
     furthestMarkersLayerGroup.addLayer(mkr);
     mkr.bindPopup(
-        "<p>Distance depuis l'origine : " + toKm(distance, fix) + " km</p>",
+        `<p>Distance depuis l'origine : ${toKm(distance, fix)} km</p>`,
     );
     furthestMarkers[index] = mkr;
 };
-
-/**
- * Merges a list of polygons into a single polygon, or a multipolygon if it is disjoint.
- * @param {Array} polys The list of polygons to merge.
- * @returns A promise that resolves to a single polygon representing the union of the input polygons.
- */
-async function mergePolys(polys) {
-    function work({ data }) {
-        importScripts("https://cdn.jsdelivr.net/npm/@turf/turf@7/turf.min.js");
-        if (data.length === 0) {
-            throw new Error("Cannot compute union of empty polygon list");
-        } else if (data.length === 1) {
-            postMessage(data[0]);
-        } else {
-            let turfpolys = [];
-            for (let p = 0; p < data.length; p++) {
-                turfpoly = turf.polygon(data[p].geometry.coordinates);
-                turfpolys.push(turfpoly);
-            }
-            union = turf.union(turf.featureCollection(turfpolys));
-            postMessage(union);
-        }
-    }
-
-    let blob = new Blob(["onmessage =" + work.toString()], {
-        type: "application/javascript",
-    });
-    let worker = new Worker(URL.createObjectURL(blob));
-    workers.push(worker);
-    worker.postMessage(polys);
-
-    return await new Promise((resolve, reject) => {
-        workerAbortController.signal.addEventListener("abort", () => {
-            reject("Worker aborted");
-        });
-        worker.onmessage = (e) => {
-            resolve(e.data);
-        };
-    });
-}
 
 /**
  *
@@ -595,13 +555,13 @@ const updateIsochroneIntervalOptions = () => {
  */
 const getCurrentDateTime = () => {
     const now = new Date();
-    const year = now.getFullYear().toString().padStart(2, "0");
-    const month = (now.getMonth() + 1).toString().padStart(2, "0");
-    const day = now.getDate().toString().padStart(2, "0");
-    const hour = now.getHours().toString().padStart(2, "0");
-    const minute = now.getMinutes().toString().padStart(2, "0");
-
-    return year + "-" + month + "-" + day + " " + hour + ":" + minute;
+    const pad = (v) => String(v).padStart(2, "0");
+    const year = now.getFullYear();
+    const month = pad(now.getMonth() + 1);
+    const day = pad(now.getDate());
+    const hour = pad(now.getHours());
+    const minute = pad(now.getMinutes());
+    return `${year}-${month}-${day}T${hour}:${minute}`; // NOTE the 'T'
 };
 
 /**
@@ -961,7 +921,7 @@ selectOriginPointElem2.addEventListener("click", () => {
 
 /** Triggered when the map is being dragged around
  */
-map.on("dragstart", (e) => {
+map.on("dragstart", (_) => {
     if (!isAiming) {
         return;
     }
@@ -980,14 +940,12 @@ map.on("dragstart", (e) => {
 /**
  * Triggered when the map is moved.
  */
-map.on("move", (e) => {
-    if (!isAiming) {
+map.on("move", (_) => {
+    if (!isAiming || isMapMoving) {
         return;
     }
-    if (isMapMoving) {
-        return;
-    }
-    let index = isSelectingOriginPoint_markerIndex;
+    const index = isSelectingOriginPoint_markerIndex;
+
     //Remove current marker
     removeMarker(index);
 
@@ -996,15 +954,17 @@ map.on("move", (e) => {
         map.getCenter().lat + originPointOffsets[index][0],
         map.getCenter().lng + originPointOffsets[index][1],
     ];
+
     markers[index] = createMarker(
         originPointCoords[index][0],
         originPointCoords[index][1],
         index,
     );
 
-    mapElem.classList.remove("cursor-marker");
-    selectOriginPointElem1.classList.remove("selecting-origin-point");
-    selectOriginPointElem1.innerHTML = `<img src="./assets/images/origin-point.png" width="15"> Changer de point d'origine`;
+    mapElem.classList.remove(`cursor-marker-${index}`);
+    const btn = selectOriginPointElems[index];
+    btn.classList.remove("selecting-origin-point");
+    btn.innerHTML = `<img src="./assets/images/origin-point.png" width="15"> Changer de point d'origine`;
     setCoordValue(
         index,
         originPointCoords[index][0],
@@ -1013,7 +973,7 @@ map.on("move", (e) => {
     isSelectingOriginPoint = false;
 });
 
-map.on("moveend", (e) => {
+map.on("moveend", (_) => {
     if (isMapMoving) {
         isMapMoving = false;
     }
@@ -1126,33 +1086,29 @@ closeOriginPoint2.addEventListener("click", () => {
 formElem.addEventListener("submit", async (e) => {
     e.preventDefault();
     onStartComputeIsochrone?.();
+
     if (isFormSubmitted) {
         abortController.abort();
         abortController = new AbortController();
         return;
     }
-    // if (isWorkersRunning) {
-    workerAbortController.abort();
-    for (let w of workers) {
-        w.terminate();
-    }
-    workers = [];
-    // }
-    isWorkersRunning = true;
+
     isFormSubmitted = true;
     submitButton.classList.add("btn-cancel-request");
     submitButton.innerHTML = `<img src="./assets/images/target.png" width="20" height="20"> Annuler`;
 
-    await displayIsochroneMap(0);
-    if (originPointCoords[1] !== null) {
-        await displayIsochroneMap(1, false);
+    try {
+        await displayIsochroneMap(0);
+        if (originPointCoords[1] !== null) {
+            await displayIsochroneMap(1, false);
+        }
+    } finally {
+        isFormSubmitted = false;
+        submitButton.classList.remove("btn-cancel-request");
+        submitButton.innerHTML = `<img src="./assets/images/target.png" width="20" height="20"> Calculer`;
+
+        onFinishComputeIsochrone?.();
     }
-
-    isFormSubmitted = false;
-    submitButton.classList.remove("btn-cancel-request");
-    submitButton.innerHTML = `<img src="./assets/images/target.png" width="20" height="20"> Calculer`;
-
-    onFinishComputeIsochrone?.();
 });
 
 legendControls_opacitySliders.forEach((ctrl) => {
@@ -1162,11 +1118,11 @@ legendControls_opacitySliders.forEach((ctrl) => {
     });
 });
 
-legend.addEventListener("click", (e) => {
+legend.addEventListener("click", (_) => {
     bringToFront(0);
 });
 
-legend2.addEventListener("click", (e) => {
+legend2.addEventListener("click", (_) => {
     bringToFront(1);
 });
 
