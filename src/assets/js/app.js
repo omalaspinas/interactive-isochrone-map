@@ -65,7 +65,6 @@ let isSelectingOriginPoint_markerIndex = 0;
 let markers = [null, null];
 let furthestMarkers = [null, null];
 let furthestMarkersLayerGroup = null;
-let workers = [];
 
 let selectOriginPointElems = [selectOriginPointElem1, selectOriginPointElem2];
 let originPointCoordValueElem1 = document.getElementById(
@@ -85,9 +84,7 @@ let isochronesLayer = null;
 // let originPointCoord2 = null;
 let originPointCoords = [null, null];
 let isFormSubmitted = false;
-let isWorkersRunning = false;
 let abortController = new AbortController();
-let workerAbortController = new AbortController();
 let legendControls_opacitySliders = document.querySelectorAll(
     '.legend-controls input[type="range"]',
 );
@@ -443,7 +440,7 @@ const toKm = (val, fix = 2) => {
 
 /**
  *
- * @param {Array} coord The coordinate to place the pin at, as [lng, lat]
+ * @param {Array} coord The coordinate to place the pin at, as [lat, lng]
  * @param {number} distance The distance from the origin, in meters
  * @param {number} index The index of the isochrone map (0 for first, 1 for second)
  * @param {number} fix The number of decimal places to show in the marker popup
@@ -1094,14 +1091,6 @@ formElem.addEventListener("submit", async (e) => {
         abortController = new AbortController();
         return;
     }
-    // if (isWorkersRunning) {
-    workerAbortController.abort();
-    for (let w of workers) {
-        w.terminate();
-    }
-    workers = [];
-    // }
-    isWorkersRunning = true;
     isFormSubmitted = true;
     submitButton.classList.add("btn-cancel-request");
     submitButton.innerHTML = `<img src="./assets/images/target.png" width="20" height="20"> Annuler`;
