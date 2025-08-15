@@ -78,7 +78,6 @@ let originPointCoordValueElems = [
     originPointCoordValueElem2,
 ];
 
-let originPointMarker = null;
 let isochronesLayer = null;
 // let originPointCoord = null;
 // let originPointCoord2 = null;
@@ -92,8 +91,6 @@ let legendControls_opacitySliders = document.querySelectorAll(
 let isMapMoving = false;
 
 let onMarkerPlacementEndCallback = null;
-
-const spinner = `<div class="lds-dual-ring"></div>`;
 
 const customMarker = L.icon({
     iconUrl: "./assets/images/marker.png",
@@ -145,7 +142,7 @@ const ResetToaster = () => {
 };
 
 // Different openstreetmap tiles
-var OpenStreetMap_Mapnik = L.tileLayer(
+const OpenStreetMap_Mapnik = L.tileLayer(
     "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
     {
         maxZoom: 19,
@@ -153,7 +150,7 @@ var OpenStreetMap_Mapnik = L.tileLayer(
             '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     },
 );
-var Stadia_AlidadeSmooth = L.tileLayer(
+const Stadia_AlidadeSmooth = L.tileLayer(
     "https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.{ext}",
     {
         attribution:
@@ -161,7 +158,7 @@ var Stadia_AlidadeSmooth = L.tileLayer(
         ext: "png",
     },
 );
-var Stadia_StamenTonerLite = L.tileLayer(
+const Stadia_StamenTonerLite = L.tileLayer(
     "https://tiles.stadiamaps.com/tiles/stamen_toner_lite/{z}/{x}/{y}{r}.{ext}",
     {
         attribution:
@@ -169,14 +166,14 @@ var Stadia_StamenTonerLite = L.tileLayer(
         ext: "png",
     },
 );
-var Esri_WorldGrayCanvas = L.tileLayer(
+const Esri_WorldGrayCanvas = L.tileLayer(
     "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
     {
         attribution: "Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ",
         maxZoom: 16,
     },
 );
-var CartoDB_Positron = L.tileLayer(
+const CartoDB_Positron = L.tileLayer(
     "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
     {
         attribution:
@@ -199,7 +196,7 @@ const init = () => {
     // departureAtInput.value = departureAtInput.max;
     updateIsochroneIntervalOptions();
 
-    var baseMap = CartoDB_Positron;
+    let baseMap = CartoDB_Positron;
     baseMap.addTo(map);
     map.createPane("isochrones0");
     map.getPane("isochrones0").style.opacity = 0.6;
@@ -339,7 +336,7 @@ const displayIsochrones = async (isochroneMap, index = 0) => {
         .map((index) => palette[index])
         .reverse();
 
-    let all_polygons = [];
+    let len = 0;
     // Displays isochrones by layer from largest to smallest.
     for (const [i, isochrone] of isochroneMap.isochrones.reverse().entries()) {
         let iso_polygons = [];
@@ -377,7 +374,7 @@ const displayIsochrones = async (isochroneMap, index = 0) => {
             createLegend(color, isochrone.time_limit, i, index),
         );
         // Add the sublist to the list of all polygons
-        all_polygons.push(iso_polygons);
+        len += 1;
     }
 
     // Show the opacity slider for the current isochrone map
@@ -386,7 +383,6 @@ const displayIsochrones = async (isochroneMap, index = 0) => {
 
     // Merge the polygons
     let aborted = false;
-    let len = all_polygons.length;
     // Iterate backwards, compute smallest area first
     for (let i = len - 1; i >= 0; i--) {
         if (aborted) {
@@ -679,23 +675,15 @@ const StartMarkerPlacement = (markerIndex) => {
  * Returns true if the resolution is mobile, false otherwise.
  * @returns {boolean} True if the resolution is mobile, false otherwise.
  */
-const isMobileResolution = () => {
-    if (screen.width < 768) {
-        return true;
-    }
-    return false;
-};
+const isMobileResolution = () =>
+    window.matchMedia("(max-width: 767px)").matches;
 
 /**
  * Returns true if the resolution is tablet, false otherwise.
  * @returns {boolean} True if the resolution is tablet, false otherwise.
  */
-const isTabletResolution = () => {
-    if (screen.width < 960) {
-        return true;
-    }
-    return false;
-};
+const isTabletResolution = () =>
+    window.matchMedia("(max-width: 959px)").matches;
 
 /**
  * Move the map view to a given coordinate.
