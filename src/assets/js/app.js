@@ -1,3 +1,6 @@
+// Silence Linter
+/* global L */
+
 const mapElem = document.getElementById("map");
 const HRDF_SERVER_URL = "https://iso.hepiapp.ch/api/";
 
@@ -48,7 +51,6 @@ const submitButton = document.getElementById("submit-button");
 
 /* Second point controls */
 
-const ctrlsPointTwo = document.getElementById("ctrls-point-2");
 const ctrlsPointTwoHidden = document.getElementById("ctrls-point-2-hidden");
 const ctrlsPointTwoInner = document.getElementById("ctrls-point-2-inner");
 const closeOriginPoint2 = document.getElementById("close-origin-point-2");
@@ -66,14 +68,14 @@ let markers = [null, null];
 let furthestMarkers = [null, null];
 let furthestMarkersLayerGroup = null;
 
-let selectOriginPointElems = [selectOriginPointElem1, selectOriginPointElem2];
-let originPointCoordValueElem1 = document.getElementById(
+const selectOriginPointElems = [selectOriginPointElem1, selectOriginPointElem2];
+const originPointCoordValueElem1 = document.getElementById(
     "origin-point-coord-value-1",
 );
-let originPointCoordValueElem2 = document.getElementById(
+const originPointCoordValueElem2 = document.getElementById(
     "origin-point-coord-value-2",
 );
-let originPointCoordValueElems = [
+const originPointCoordValueElems = [
     originPointCoordValueElem1,
     originPointCoordValueElem2,
 ];
@@ -84,7 +86,7 @@ let isochronesLayer = null;
 let originPointCoords = [null, null];
 let isFormSubmitted = false;
 let abortController = new AbortController();
-let legendControls_opacitySliders = document.querySelectorAll(
+const legendControls_opacitySliders = document.querySelectorAll(
     '.legend-controls input[type="range"]',
 );
 
@@ -134,7 +136,7 @@ let onFinishComputeIsochrone = () => {
 const ResetToaster = () => {
     let messages = document
         .getElementById("toast-content")
-        .querySelectorAll("p");
+        ?.querySelectorAll("p");
 
     messages.forEach((message) => {
         message.classList.add("hidden");
@@ -142,37 +144,6 @@ const ResetToaster = () => {
 };
 
 // Different openstreetmap tiles
-const OpenStreetMap_Mapnik = L.tileLayer(
-    "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-    {
-        maxZoom: 19,
-        attribution:
-            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    },
-);
-const Stadia_AlidadeSmooth = L.tileLayer(
-    "https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.{ext}",
-    {
-        attribution:
-            '&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        ext: "png",
-    },
-);
-const Stadia_StamenTonerLite = L.tileLayer(
-    "https://tiles.stadiamaps.com/tiles/stamen_toner_lite/{z}/{x}/{y}{r}.{ext}",
-    {
-        attribution:
-            '&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://www.stamen.com/" target="_blank">Stamen Design</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        ext: "png",
-    },
-);
-const Esri_WorldGrayCanvas = L.tileLayer(
-    "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
-    {
-        attribution: "Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ",
-        maxZoom: 16,
-    },
-);
 const CartoDB_Positron = L.tileLayer(
     "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
     {
@@ -214,7 +185,9 @@ const setMinMaxDepartureAt = async () => {
         departureAtInput.min = `${metadata.start_date}T00:00`;
         departureAtInput.max = `${metadata.end_date}T23:59`;
     } catch (err) {
-        // alert("Une erreur inconnue s'est produite lors du chargement des métadonnées.");
+        alert(
+            `L'erreur ${err} s'est produite lors du chargement de MinMaxDepartureAt.`,
+        );
         return;
     }
 };
@@ -336,9 +309,10 @@ const displayIsochrones = async (isochroneMap, index = 0) => {
         .map((index) => palette[index])
         .reverse();
 
-    let len = 0;
+    const isoList = Array.from(isochroneMap.isochrones).reverse();
+    let len = isoList.length;
     // Displays isochrones by layer from largest to smallest.
-    for (const [i, isochrone] of isochroneMap.isochrones.reverse().entries()) {
+    for (const [i, isochrone] of isoList.entries()) {
         let iso_polygons = [];
         const color = colors[i];
         for (const polygon of isochrone.polygons) {
@@ -373,8 +347,6 @@ const displayIsochrones = async (isochroneMap, index = 0) => {
         legend_div.appendChild(
             createLegend(color, isochrone.time_limit, i, index),
         );
-        // Add the sublist to the list of all polygons
-        len += 1;
     }
 
     // Show the opacity slider for the current isochrone map
@@ -384,32 +356,30 @@ const displayIsochrones = async (isochroneMap, index = 0) => {
     // Merge the polygons
     let aborted = false;
     // Iterate backwards, compute smallest area first
-    for (let i = len - 1; i >= 0; i--) {
+    for (let i = 0; i < len; i++) {
+        const revIndex = len - i - 1;
         if (aborted) {
             //The work has been aborted, report.
             ResetToaster();
-            setAreaInLegend("ABORTED", index, i);
+            setAreaInLegend("ABORTED", index, revIndex);
             continue;
         }
         try {
             setAreaInLegend(
-                toKm2(isochroneMap.areas[len - i - 1]) + " km²",
+                toKm2(isochroneMap.areas[i]) + " km²",
                 index,
-                i,
+                revIndex,
             );
         } catch (err) {
             // The worker has been aborted
             console.log(err);
             aborted = true;
             ResetToaster();
-            setAreaInLegend("ABORTED", index, i);
+            setAreaInLegend("ABORTED", index, revIndex);
         }
-        if (i === 0) {
-            placePin(
-                isochroneMap.max_distances[len - i - 1][0],
-                isochroneMap.max_distances[len - i - 1][1],
-                index,
-            );
+        if (i === len - 1) {
+            const [coord, dist] = isochroneMap.max_distances[i];
+            placePin(coord, dist, index);
         }
     }
 };
@@ -471,17 +441,6 @@ const setAreaInLegend = (value, iso_index, time_limit_index) => {
     }
     // Write the value
     areaLabelElement.innerHTML = value;
-};
-
-const setMaxDistanceInLegend = (value, iso_index, fix = 2) => {
-    // Search for the element
-    let n = `legend-max-distance-${iso_index + 1}`;
-    let distanceLabelElement = document.getElementById(n);
-    if (distanceLabelElement === null) {
-        throw new Error("Distance label not found: " + n);
-    }
-    // Write the value
-    distanceLabelElement.innerHTML = value.toFixed(fix);
 };
 
 const setOptimalDepartInLegend = (value, iso_idx) => {
@@ -672,13 +631,6 @@ const StartMarkerPlacement = (markerIndex) => {
 };
 
 /**
- * Returns true if the resolution is mobile, false otherwise.
- * @returns {boolean} True if the resolution is mobile, false otherwise.
- */
-const isMobileResolution = () =>
-    window.matchMedia("(max-width: 767px)").matches;
-
-/**
  * Returns true if the resolution is tablet, false otherwise.
  * @returns {boolean} True if the resolution is tablet, false otherwise.
  */
@@ -779,11 +731,12 @@ const bringToFront = (isoIndex) => {
 };
 
 // About modal
-
+// Used in index.html
 const openAboutModal = () => {
     document.getElementById("about-modal").classList.remove("hidden");
 };
 
+// Used in index.html
 const closeAboutModal = () => {
     document.getElementById("about-modal").classList.add("hidden");
 };
@@ -836,14 +789,6 @@ const startTextCycle = () => {
 
 const stopTextCycle = () => {
     clearInterval(textCycle);
-};
-
-const changeToasterText = (text, duration = 0) => {
-    document.getElementById("toast-content").classList.add("hidden");
-    setTimeout(() => {
-        document.getElementById("toast-content").innerHTML = text;
-        document.getElementById("toast-content").classList.remove("hidden");
-    }, duration);
 };
 
 // Event listeners.
@@ -909,7 +854,7 @@ selectOriginPointElem2.addEventListener("click", () => {
 
 /** Triggered when the map is being dragged around
  */
-map.on("dragstart", (_) => {
+map.on("dragstart", () => {
     if (!isAiming) {
         return;
     }
@@ -928,7 +873,7 @@ map.on("dragstart", (_) => {
 /**
  * Triggered when the map is moved.
  */
-map.on("move", (_) => {
+map.on("move", () => {
     if (!isAiming || isMapMoving) {
         return;
     }
@@ -961,7 +906,7 @@ map.on("move", (_) => {
     isSelectingOriginPoint = false;
 });
 
-map.on("moveend", (_) => {
+map.on("moveend", () => {
     if (isMapMoving) {
         isMapMoving = false;
     }
@@ -1106,11 +1051,11 @@ legendControls_opacitySliders.forEach((ctrl) => {
     });
 });
 
-legend.addEventListener("click", (_) => {
+legend.addEventListener("click", () => {
     bringToFront(0);
 });
 
-legend2.addEventListener("click", (_) => {
+legend2.addEventListener("click", () => {
     bringToFront(1);
 });
 
