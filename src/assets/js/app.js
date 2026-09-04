@@ -192,6 +192,10 @@ const centerLng = 6.13536;
 
 const map = L.map("map").setView([centerLat, centerLng], 11);
 
+L.maplibreGL({
+    style: 'https://tiles.openfreemap.org/styles/positron',
+}).addTo(map)
+
 // Functions.
 const init = () => {
     setMinMaxDepartureAt();
@@ -641,7 +645,7 @@ const setCoordValue = (index, lat, lng) => {
  * Ends the marker placement mode.
  * @param {number} markerIndex The index of the marker (0 for first, 1 for second)
  */
-const EndMarkerPlacement = function (markerIndex) {
+const EndMarkerPlacement = function(markerIndex) {
     if (isTabletResolution()) {
         showForm();
     }
@@ -806,6 +810,7 @@ const openToaster = () => {
     document.getElementById("toast").classList.remove("hidden");
     startTextCycle();
 };
+<script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet/leaflet-maplibre-gl.js"></script>
 
 const closeToaster = () => {
     document.getElementById("toast").classList.add("hidden");
